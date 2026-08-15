@@ -1,0 +1,59 @@
+{
+  "_comment": [
+    "Shared option lists, in one place, served at GET /api/v1/option-sets.",
+    "",
+    "These were hard-coded three times over in the source: in node_registry.py",
+    "as _STATE_OPS / _MAPPING_TYPES / _SCHEMA_TYPES (which no node type actually",
+    "referenced), again inside dynamic_fields.js where the list widgets built",
+    "their own <select> options, and a third time in the HTML template and",
+    "properties_panel.js. Adding an operation meant editing all three.",
+    "",
+    "Now the UI reads them from here. Adding an option is one line in this file."
+  ],
+
+  "mappingTypes": [
+    { "value": "string",   "label": "String" },
+    { "value": "number",   "label": "Number" },
+    { "value": "boolean",  "label": "Boolean" },
+    { "value": "array",    "label": "Array" },
+    { "value": "object",   "label": "Object" },
+    { "value": "variable", "label": "Variable Ref" }
+  ],
+
+  "stateOps": [
+    { "value": "set",       "label": "Set" },
+    { "value": "append",    "label": "Append" },
+    { "value": "extend",    "label": "Extend" },
+    { "value": "merge",     "label": "Merge" },
+    { "value": "increment", "label": "Increment" },
+    { "value": "remove",    "label": "Remove" },
+    { "value": "clear",     "label": "Clear" }
+  ],
+
+  "schemaTypes": [
+    { "value": "string",  "label": "string" },
+    { "value": "number",  "label": "number" },
+    { "value": "integer", "label": "integer" },
+    { "value": "boolean", "label": "boolean" },
+    { "value": "array",   "label": "array" },
+    { "value": "object",  "label": "object" }
+  ],
+
+  "messageRoles": [
+    { "value": "system",    "label": "System" },
+    { "value": "user",      "label": "User" },
+    { "value": "assistant", "label": "Assistant" }
+  ],
+
+  "invocationTypes": [
+    { "value": "request_response", "label": "Request / Response" },
+    { "value": "event",            "label": "Event" },
+    { "value": "scheduled",        "label": "Scheduled" }
+  ],
+
+  "semanticDomains": [
+    { "value": "energy",     "label": "Energy" },
+    { "value": "facilities", "label": "Facilities" },
+    { "value": "risk",       "label": "Risk" }
+  ]
+}

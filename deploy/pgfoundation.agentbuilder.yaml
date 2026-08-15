@@ -15,6 +15,9 @@ datasources:
     pool: { min_size: 2, max_size: 10, acquire_timeout_seconds: 5 }
     statement_timeout_ms: 10000
     read_only: false
+    # No search_path is set here on purpose: this service sends the schema
+    # (`agent_builder`) on every call, so the objects it names resolve the
+    # same way regardless of how the connection is configured.
 
 api:
   # Explicit, not merely defaulted: this consumer never sends SQL text.

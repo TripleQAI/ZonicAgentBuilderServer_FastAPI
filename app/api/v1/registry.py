@@ -19,7 +19,7 @@ from app.domain.schemas.workflow import (
     ToolDefinition,
     ToolListResponse,
 )
-from app.registry.loader import load_seed_tools, to_api_rows
+from app.registry.loader import load_option_sets, load_seed_tools, to_api_rows
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,20 @@ async def node_types(repo: NodeTypeRepoDep) -> NodeTypeListResponse:
         definitions = [NodeTypeDefinition.model_validate(r) for r in to_api_rows()]
 
     return NodeTypeListResponse(node_types=definitions)
+
+
+@router.get(
+    "/option-sets",
+    response_model=dict[str, list[dict[str, str]]],
+    summary="Shared select-option lists",
+)
+async def option_sets() -> dict[str, list[dict[str, str]]]:
+    """Option lists the UI renders in list widgets and settings panels.
+
+    Serving them keeps one definition: the source repeated these across
+    node_registry.py, dynamic_fields.js and the page template.
+    """
+    return load_option_sets()
 
 
 @router.get("/tools", response_model=ToolListResponse, summary="Tool catalogue")

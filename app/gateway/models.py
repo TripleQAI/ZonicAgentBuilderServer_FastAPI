@@ -15,7 +15,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FilterOp(StrEnum):
@@ -47,10 +47,23 @@ class OrderBy(BaseModel):
     descending: bool = False
 
 
-class ViewIn(BaseModel):
-    """Governed read of a named view or table."""
+class SchemaQualified(BaseModel):
+    """Base for the name-based payloads.
+
+    The wire field is ``schema``; it is ``db_schema`` here because ``schema``
+    shadows a Pydantic member — the same accommodation the gateway makes, and
+    part of its contract. Dump these models with ``by_alias=True``.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
 
     name: str
+    db_schema: str | None = Field(default=None, alias="schema")
+
+
+class ViewIn(SchemaQualified):
+    """Governed read of a named view or table."""
+
     columns: list[str] | None = None
     filters: list[Filter] = Field(default_factory=list)
     order_by: list[OrderBy] = Field(default_factory=list)
@@ -58,15 +71,13 @@ class ViewIn(BaseModel):
     offset: int | None = None
 
 
-class ProcedureIn(BaseModel):
+class ProcedureIn(SchemaQualified):
     """``CALL name(args...)``. NULL placeholders stand in for INOUT parameters."""
 
-    name: str
     args: list[Any] | None = None
 
 
-class FunctionIn(BaseModel):
-    name: str
+class FunctionIn(SchemaQualified):
     args: dict[str, Any] | list[Any] | None = None
     scalar: bool = False
 

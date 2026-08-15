@@ -51,11 +51,23 @@ def test_read_responses_use_the_query_envelope() -> None:
 
 
 def test_our_dtos_serialise_to_the_documented_field_names() -> None:
-    view = ViewIn(name="v_agent_summary").model_dump(exclude_none=True)
-    assert set(view) <= {"name", "columns", "filters", "order_by", "limit", "offset"}
+    """Dumped the way the adapter dumps them: by_alias, so `db_schema` goes out
+    as `schema` — the gateway's documented field name (its doc 08 §8.2)."""
+    view = ViewIn(name="v_agent_summary", db_schema="agent_builder").model_dump(
+        by_alias=True, exclude_none=True
+    )
+    assert set(view) <= {
+        "name", "schema", "columns", "filters", "order_by", "limit", "offset"
+    }
+    assert view["schema"] == "agent_builder"
+    assert "db_schema" not in view
 
-    procedure = ProcedureIn(name="sp_x", args=[None]).model_dump()
-    assert set(procedure) == {"name", "args"}
+    procedure = ProcedureIn(
+        name="sp_x", db_schema="agent_builder", args=[None]
+    ).model_dump(by_alias=True, exclude_none=True)
+    assert set(procedure) == {"name", "schema", "args"}
+    # INOUT placeholders are None *inside* args and must survive exclude_none.
+    assert procedure["args"] == [None]
 
     batch = BatchRequest(mode="parallel").model_dump()
     assert set(batch) == {"mode", "items"}

@@ -18,12 +18,19 @@ RESOURCES = Path(__file__).resolve().parent.parent / "resources"
 NODE_TYPES_DIR = RESOURCES / "node_types"
 FRAGMENTS_DIR = RESOURCES / "fragments"
 TOOLS_FILE = RESOURCES / "tools" / "seed_tools.json"
+OPTION_SETS_FILE = RESOURCES / "option_sets.json"
+NODE_SEMANTICS_FILE = RESOURCES / "node_semantics.json"
 
 _MAX_DEPTH = 16
 
 
 def _read(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _without_docs(payload: dict[str, Any]) -> dict[str, Any]:
+    """Drop the ``_comment`` / ``_doc`` keys the resource files carry."""
+    return {k: v for k, v in payload.items() if not k.startswith("_")}
 
 
 def _load_fragments() -> dict[str, Any]:
@@ -61,6 +68,25 @@ def load_node_registry() -> dict[str, dict[str, Any]]:
     return dict(
         sorted(registry.items(), key=lambda kv: (kv[1].get("sortOrder", 0), kv[0]))
     )
+
+
+@lru_cache(maxsize=1)
+def load_option_sets() -> dict[str, list[dict[str, str]]]:
+    """Shared `<select>` option lists, served to the UI so it holds none itself."""
+    if not OPTION_SETS_FILE.exists():  # pragma: no cover - resource is committed
+        return {}
+    return _without_docs(_read(OPTION_SETS_FILE))
+
+
+@lru_cache(maxsize=1)
+def load_node_semantics() -> dict[str, Any]:
+    """Which node types reference children, hand off, or fan out into branches."""
+    if not NODE_SEMANTICS_FILE.exists():  # pragma: no cover - resource is committed
+        return {}
+    return {
+        section: _without_docs(entries) if isinstance(entries, dict) else entries
+        for section, entries in _without_docs(_read(NODE_SEMANTICS_FILE)).items()
+    }
 
 
 @lru_cache(maxsize=1)

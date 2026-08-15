@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     # --- data access ------------------------------------------------------
     pg_gateway_base_url: str = "http://localhost:8600"
     pg_gateway_datasource: str = "agentbuilder"
+    #: PostgreSQL schema holding the views and procedures. Sent on every
+    #: governed call rather than relying on the connection's search_path, which
+    #: this service does not control.
+    pg_gateway_schema: str = "agent_builder"
     pg_gateway_timeout_ms: int = Field(15_000, gt=0)
     pg_gateway_connect_timeout_ms: int = Field(2_000, gt=0)
     pg_gateway_max_retries: int = Field(2, ge=0, le=5)
@@ -32,7 +36,11 @@ class Settings(BaseSettings):
     # --- service ----------------------------------------------------------
     cors_origins: str = "http://localhost:3000"
     log_level: str = "INFO"
-    seed_registry_on_startup: bool = True
+    #: Off by default, matching the source: `manage.py seed_node_registry` was
+    #: an optional command, and the API serves the JSON registry when the table
+    #: is empty. Turn it on only to push the shipped registry into the database
+    #: — note that doing so overwrites any row edited there by hand.
+    seed_registry_on_startup: bool = False
 
     # --- embedding --------------------------------------------------------
     embedding_provider: Literal["bedrock", "fake"] = "bedrock"

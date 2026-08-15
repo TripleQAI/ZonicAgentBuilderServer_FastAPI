@@ -1,12 +1,16 @@
 """Derive parent -> child relationships from a canvas, and shape the map.
 
-This is the business logic the plan keeps in Python (MIGRATION_PLAN.md §8.4):
+This is the business logic the plan keeps in Python (MIGRATION_PLAN.md §8.5):
 walking nodes to find Sub Flow children and Agent handoff targets. The
 procedures only persist what this module produces.
 
-Ported from ``agentBuilder/services/relationship_resolver.py``. Two derivation
-modes exist because the Django app resolved differently in each path, and parity
-requires reproducing both:
+Ported from ``agentBuilder/services/relationship_resolver.py``, with its
+``if node_type == 'workflow' / elif node_type == 'agent'`` chain replaced by a
+lookup into ``resources/node_semantics.json``. A new node type that references a
+child is a JSON edit, not a new branch here.
+
+Two derivation modes exist because the Django app resolved differently in each
+path, and parity requires reproducing both:
 
 * **save** — a Sub Flow child is resolved against the database, so the SQL
   ``resolve`` flag is set and the join decides.
@@ -25,8 +29,26 @@ from app.domain.schemas.agent import (
     RelationshipMap,
     UnreferencedAgent,
 )
+from app.registry.loader import load_node_semantics
 
 _AGENT_INFO_KEYS = ("agentId", "agentName", "agentVersion")
+
+
+def _child_reference_paths() -> dict[str, str]:
+    return load_node_semantics().get("childReference", {})
+
+
+def _handoff_paths() -> dict[str, str]:
+    return load_node_semantics().get("handoffTargets", {})
+
+
+def _read_path(node: dict[str, Any], dot_path: str) -> Any:
+    current: Any = node
+    for part in dot_path.split("."):
+        if not isinstance(current, dict):
+            return None
+        current = current.get(part)
+    return current
 
 
 def _as_uuid(value: Any) -> str | None:
@@ -40,23 +62,18 @@ def _sub_keys(config: dict[str, Any], keys: tuple[str, ...]) -> dict[str, Any]:
     return {k: config[k] for k in keys if k in config}
 
 
-def _handoff_targets(config: dict[str, Any]) -> list[str]:
-    targets = config.get("handoffTarget") or []
+def _handoff_rows(node: dict[str, Any], parent_wf_id: str, path: str) -> list[dict[str, Any]]:
+    """Handoffs point at a node inside the same workflow, so they are always
+    resolved and never looked up."""
+    targets = _read_path(node, path) or []
     if isinstance(targets, str):
         targets = [targets]
-    return [t for t in targets if t]
-
-
-def _handoff_rows(node: dict[str, Any], parent_wf_id: str) -> list[dict[str, Any]]:
-    """Agent handoffs point at a node inside the same workflow, so they are
-    always resolved and never looked up."""
-    config = node.get("config") or {}
     return [
         {
             "child_agentic_workflow_id": parent_wf_id,
             "source_node_id": node.get("id", ""),
             "source_node_name": node.get("name", ""),
-            "source_node_type": "agent",
+            "source_node_type": node.get("type", ""),
             "relationship_type": "handoff",
             "config_inputs": {"targetNodeId": target},
             "agent_info": {},
@@ -67,7 +84,8 @@ def _handoff_rows(node: dict[str, Any], parent_wf_id: str) -> list[dict[str, Any
             "resolve": False,
             "link_child": False,
         }
-        for target in _handoff_targets(config)
+        for target in targets
+        if target
     ]
 
 
@@ -77,7 +95,7 @@ def _sub_flow_row(node: dict[str, Any], child_id: str) -> dict[str, Any]:
         "child_agentic_workflow_id": child_id,
         "source_node_id": node.get("id", ""),
         "source_node_name": node.get("name", ""),
-        "source_node_type": node.get("type", "workflow"),
+        "source_node_type": node.get("type", ""),
         "relationship_type": "sub_flow",
         "config_inputs": config,
         "agent_info": _sub_keys(config, _AGENT_INFO_KEYS),
@@ -92,19 +110,20 @@ def _sub_flow_row(node: dict[str, Any], child_id: str) -> dict[str, Any]:
 
 def derive_for_save(nodes: list[dict[str, Any]], parent_wf_id: str) -> list[dict[str, Any]]:
     """Relationship rows for a PUT. Sub Flow children resolve against the DB."""
+    child_paths = _child_reference_paths()
+    handoff_paths = _handoff_paths()
     rows: list[dict[str, Any]] = []
+
     for node in nodes or []:
         node_type = node.get("type", "")
-        config = node.get("config") or {}
 
-        if node_type == "workflow":
-            child_id = _as_uuid(config.get("agenticWorkflowId"))
-            if child_id is None:
-                continue
-            rows.append(_sub_flow_row(node, child_id))
+        if node_type in child_paths:
+            child_id = _as_uuid(_read_path(node, child_paths[node_type]))
+            if child_id is not None:
+                rows.append(_sub_flow_row(node, child_id))
 
-        elif node_type == "agent":
-            rows.extend(_handoff_rows(node, parent_wf_id))
+        if node_type in handoff_paths:
+            rows.extend(_handoff_rows(node, parent_wf_id, handoff_paths[node_type]))
 
     return rows
 
@@ -118,14 +137,16 @@ def derive_for_import(
     a Sub Flow whose child is not in ``sub_agents`` is recorded unresolved even
     if a row with that id happens to already exist in the database.
     """
+    child_paths = _child_reference_paths()
     rows: list[dict[str, Any]] = []
     warnings: list[str] = []
 
     for node in root_nodes or []:
-        if node.get("type") != "workflow":
+        node_type = node.get("type", "")
+        if node_type not in child_paths:
             continue
-        config = node.get("config") or {}
-        raw_child_id = config.get("agenticWorkflowId")
+
+        raw_child_id = _read_path(node, child_paths[node_type])
         if not raw_child_id:
             continue
 

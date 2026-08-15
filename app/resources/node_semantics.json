@@ -1,0 +1,33 @@
+{
+  "_comment": [
+    "Structural roles a node type can play, declared as data.",
+    "",
+    "Three node types mean something to the engine beyond their form: a Sub Flow",
+    "points at a child workflow, an Agent can hand off to sibling nodes, and a",
+    "Rule fans out into one canvas handle per branch. The source expressed that",
+    "as `if node_type == 'workflow'` / `elif node_type == 'agent'` in the",
+    "resolver and `node.get('type') == 'rule'` in the validator.",
+    "",
+    "Declaring it here means those literals exist in one file instead of being",
+    "spread across the services, and a new node type that references a child is",
+    "a JSON edit rather than a new branch in an if-chain.",
+    "",
+    "Paths are dot-paths relative to the node root, the same convention the form",
+    "schemas use."
+  ],
+
+  "childReference": {
+    "_doc": "node type -> path holding the child workflow id (a sub_flow edge)",
+    "workflow": "config.agenticWorkflowId"
+  },
+
+  "handoffTargets": {
+    "_doc": "node type -> path holding sibling node ids to hand off to",
+    "agent": "config.handoffTarget"
+  },
+
+  "branches": {
+    "_doc": "node type -> where its branches live and which key identifies one",
+    "rule": { "path": "config.rules", "idField": "ruleId" }
+  }
+}

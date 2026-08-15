@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 from app.domain.schemas.workflow import ValidationResult
+from app.registry.loader import load_node_semantics
 from app.services.validation import rules as rule_primitives
 
 RULES_FILE = Path(__file__).resolve().parent.parent.parent / "resources" / "validation_rules.json"
@@ -89,14 +90,22 @@ def validate_workflow(agent_json: dict[str, Any]) -> ValidationResult:
 
         _apply_node_rules(node, errors, warnings)
 
-    # -- rule handles, for edge validation ---------------------------------
+    # -- branch handles, for edge validation -------------------------------
+    # Which node types fan out into handles, and where their branches live, is
+    # declared in resources/node_semantics.json rather than hard-coded here.
+    branch_spec = load_node_semantics().get("branches", {})
     rule_handles: dict[str, set[str]] = {}
     for node in nodes:
-        if node.get("type") == "rule" and node.get("id"):
-            branches = (node.get("config") or {}).get("rules") or []
-            rule_handles[node["id"]] = {
-                b["ruleId"] for b in branches if isinstance(b, dict) and b.get("ruleId")
-            }
+        spec = branch_spec.get(node.get("type", ""))
+        if not spec or not node.get("id"):
+            continue
+        branches = rule_primitives.read_path(node, spec["path"]) or []
+        if not isinstance(branches, list):
+            continue
+        id_field = spec["idField"]
+        rule_handles[node["id"]] = {
+            b[id_field] for b in branches if isinstance(b, dict) and b.get(id_field)
+        }
 
     # -- edges -------------------------------------------------------------
     seen_edge_ids: set[str] = set()

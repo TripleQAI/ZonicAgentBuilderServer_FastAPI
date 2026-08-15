@@ -13,11 +13,17 @@ from typing import Any
 
 from app.core.errors import InvalidRequestError, NotFoundError
 from app.domain.schemas.agent import EmbedResult
+from app.registry.loader import load_option_sets
 from app.repositories.agent_workflow import AgentWorkflowRepository
 from app.services.embedding.port import EmbeddingProvider
 
-_DOMAIN_LABELS = {"energy": "Energy", "facilities": "Facilities", "risk": "Risk"}
 _DIMENSIONS = 1024
+
+
+def _domain_labels() -> dict[str, str]:
+    """Labels come from the shared option set the UI also renders, so the two
+    cannot disagree about what a domain is called."""
+    return {o["value"]: o["label"] for o in load_option_sets().get("semanticDomains", [])}
 
 
 def build_embedding_text(agent: dict[str, Any]) -> str:
@@ -27,7 +33,7 @@ def build_embedding_text(agent: dict[str, Any]) -> str:
         parts.append(f"Description: {agent['description']}")
     domain = agent.get("semanticDomain")
     if domain:
-        parts.append(f"Domain: {_DOMAIN_LABELS.get(domain, domain)}")
+        parts.append(f"Domain: {_domain_labels().get(domain, domain)}")
     if agent.get("semanticKeywords"):
         parts.append(f"Keywords: {agent['semanticKeywords']}")
     if agent.get("semanticUseCases"):

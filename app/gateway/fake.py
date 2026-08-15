@@ -73,6 +73,8 @@ class FakeGateway:
         offset: int | None = None,
         trace_id: str | None = None,
     ) -> QueryOut:
+        # Relations are keyed by bare name here; the schema is a deployment
+        # detail the real gateway resolves.
         self.calls.append(("view", name))
         rows = self._relation(name)
         for f in filters or []:

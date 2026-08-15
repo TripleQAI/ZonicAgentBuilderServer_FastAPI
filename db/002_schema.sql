@@ -1,32 +1,50 @@
--- 002_schema.sql — tables.
+-- 002_schema.sql — base tables.
 --
--- Translated from the Django models in ZonicAgentBuilderPortal_DjangoApp
--- (agentBuilder/models.py) per MIGRATION_PLAN.md §8.5. Django's "blank=True"
--- convention becomes NOT NULL DEFAULT '' rather than a nullable column, so the
--- application never has to distinguish NULL from empty.
+-- THE TABLES ARE THE ONES THE DJANGO APP ALREADY CREATED, in the agent_builder
+-- schema, with Django's naming convention `<app_label>_<model>`:
+--
+--     agent_builder."agentBuilder_agentworkflow"
+--     agent_builder."agentBuilder_agentrelationship"
+--     agent_builder."agentBuilder_agentworkflowchip"
+--     agent_builder."agentBuilder_workflowsnapshot"
+--     agent_builder."agentBuilder_nodetypedefinition"
+--     agent_builder."agentBuilder_tooldefinition"
+--
+-- The names are mixed case, so they must be double-quoted everywhere: an
+-- unquoted `agentBuilder_agentworkflow` folds to `agentbuilder_agentworkflow`
+-- and does not exist. Those quotes appear only in this file, 003, 004, 007, 009
+-- and 010 — the application never names a table, only the views and procedures
+-- built on top of them (all lower case), so the convention is invisible above
+-- the database.
+--
+-- On a database the Django app already built, every CREATE below is a no-op and
+-- 007_adapt_existing_schema.sql does the real work. On a clean database these
+-- statements produce the same shape Django would have.
 --
 -- Idempotent: safe to re-run.
 
+SET search_path TO agent_builder, public;
+
 -- --------------------------------------------------------------------------
 -- schema_migrations — what is deployed here. Stamped by every file.
--- The application reads it and warns; it never writes DDL.
+-- Ours, not Django's. The application reads it and warns; it never runs DDL.
 -- --------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS schema_migrations (
+CREATE TABLE IF NOT EXISTS agent_builder.schema_migrations (
     version     varchar(64)  PRIMARY KEY,
     applied_at  timestamptz  NOT NULL DEFAULT now(),
     checksum    varchar(64)  NOT NULL DEFAULT ''
 );
 
 -- --------------------------------------------------------------------------
--- agent_workflow — the aggregate root.
+-- agentBuilder_agentworkflow — the aggregate root.
 --
 -- nodes/edges/variables/interface/skills/publish_channels/security are
 -- first-class columns AND are mirrored inside raw_json, which preserves the
 -- complete original payload so unknown keys survive a round trip. The overlay
--- rule lives in v_agent_export (009) and sp_agent_workflow_save (010).
+-- rule lives in v_agent_export (009) and fn_agent_workflow_upsert (010).
 -- --------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS agent_workflow (
-    id                          uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS agent_builder."agentBuilder_agentworkflow" (
+    id                          uuid          NOT NULL PRIMARY KEY,
     agentic_workflow_id         uuid          NOT NULL UNIQUE,
 
     bpc                         varchar(100)  NOT NULL DEFAULT '',
@@ -72,16 +90,16 @@ CREATE TABLE IF NOT EXISTS agent_workflow (
 );
 
 -- --------------------------------------------------------------------------
--- agent_relationship — parent -> child edges derived from the canvas.
--- Rebuilt from scratch on every save; derivation happens in Python (plan §8.4).
+-- agentBuilder_agentrelationship — parent -> child edges derived from a canvas.
+-- Rebuilt on every save; derivation happens in Python (plan §8.4).
 -- --------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS agent_relationship (
-    id                          uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS agent_builder."agentBuilder_agentrelationship" (
+    id                          uuid          NOT NULL PRIMARY KEY,
 
     parent_agent_id             uuid          NOT NULL
-                                  REFERENCES agent_workflow(id) ON DELETE CASCADE,
+        REFERENCES agent_builder."agentBuilder_agentworkflow"(id) ON DELETE CASCADE,
     child_agent_id              uuid
-                                  REFERENCES agent_workflow(id) ON DELETE SET NULL,
+        REFERENCES agent_builder."agentBuilder_agentworkflow"(id) ON DELETE SET NULL,
 
     parent_agentic_workflow_id  uuid          NOT NULL,
     child_agentic_workflow_id   uuid          NOT NULL,
@@ -104,10 +122,10 @@ CREATE TABLE IF NOT EXISTS agent_relationship (
 );
 
 -- --------------------------------------------------------------------------
--- agent_workflow_chip — denormalised label row, written with the agent.
+-- agentBuilder_agentworkflowchip — denormalised label row, written with the agent.
 -- --------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS agent_workflow_chip (
-    id                    uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS agent_builder."agentBuilder_agentworkflowchip" (
+    id                    uuid          NOT NULL PRIMARY KEY,
     agentic_workflow_id   uuid          NOT NULL UNIQUE,
     bpc                   varchar(100)  NOT NULL DEFAULT '',
     name                  varchar(255)  NOT NULL,
@@ -117,24 +135,23 @@ CREATE TABLE IF NOT EXISTS agent_workflow_chip (
 );
 
 -- --------------------------------------------------------------------------
--- workflow_snapshot — point-in-time copies.
+-- agentBuilder_workflowsnapshot — point-in-time copies.
 -- --------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS workflow_snapshot (
-    id                 uuid         PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS agent_builder."agentBuilder_workflowsnapshot" (
+    id                 uuid         NOT NULL PRIMARY KEY,
     agent_workflow_id  uuid         NOT NULL
-                         REFERENCES agent_workflow(id) ON DELETE CASCADE,
+        REFERENCES agent_builder."agentBuilder_agentworkflow"(id) ON DELETE CASCADE,
     snapshot_json      jsonb        NOT NULL,
     comment            text         NOT NULL DEFAULT '',
     created_at         timestamptz  NOT NULL DEFAULT now()
 );
 
 -- --------------------------------------------------------------------------
--- node_type_definition — DB mirror of the JSON node registry.
--- The API prefers this table and falls back to the JSON resources when empty,
--- exactly as the Django app did.
+-- agentBuilder_nodetypedefinition — DB mirror of the JSON node registry.
+-- The API prefers this table and falls back to the JSON resources when empty.
 -- --------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS node_type_definition (
-    id                   uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS agent_builder."agentBuilder_nodetypedefinition" (
+    id                   uuid          NOT NULL PRIMARY KEY,
     type                 varchar(100)  NOT NULL UNIQUE,
     label                varchar(255)  NOT NULL,
     icon                 varchar(100)  NOT NULL DEFAULT '',
@@ -151,16 +168,16 @@ CREATE TABLE IF NOT EXISTS node_type_definition (
 );
 
 -- --------------------------------------------------------------------------
--- tool_definition — tool catalogue for the picker.
--- Django's choices become a real CHECK constraint.
+-- agentBuilder_tooldefinition — tool catalogue for the picker.
+-- Django's `choices` becomes a real CHECK constraint on a clean install; on an
+-- existing table 007 adds it only if it is missing.
 -- --------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS tool_definition (
-    id              uuid          PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE IF NOT EXISTS agent_builder."agentBuilder_tooldefinition" (
+    id              uuid          NOT NULL PRIMARY KEY,
     name            varchar(255)  NOT NULL,
     title           varchar(255)  NOT NULL DEFAULT '',
     description     text          NOT NULL DEFAULT '',
-    tool_type       varchar(50)   NOT NULL DEFAULT 'function'
-                      CHECK (tool_type IN ('function', 'handoff', 'ui_view', 'mcp')),
+    tool_type       varchar(50)   NOT NULL DEFAULT 'function',
     schema          jsonb         NOT NULL DEFAULT '{}'::jsonb,
     default_config  jsonb         NOT NULL DEFAULT '{}'::jsonb,
     is_active       boolean       NOT NULL DEFAULT true,
@@ -168,7 +185,5 @@ CREATE TABLE IF NOT EXISTS tool_definition (
     updated_at      timestamptz   NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS uq_tool_definition_name ON tool_definition (name);
-
-INSERT INTO schema_migrations (version) VALUES ('002_schema')
+INSERT INTO agent_builder.schema_migrations (version) VALUES ('002_schema')
     ON CONFLICT (version) DO NOTHING;
