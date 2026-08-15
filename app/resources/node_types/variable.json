@@ -1,0 +1,50 @@
+{
+  "type": "variable",
+  "label": "Variable Update",
+  "icon": "bi-sliders",
+  "color": "#84cc16",
+  "description": "Reads or writes workflow variables.",
+  "defaultNamePrefix": "VarUpdate",
+  "defaultData": {
+    "label": "Variable Update"
+  },
+  "defaultConfig": {
+    "updates": [],
+    "outputSchema": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Variable Updates",
+        "fields": [
+          {
+            "key": "config.updates",
+            "label": "Updates",
+            "type": "state_update_list"
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {},
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 10
+}

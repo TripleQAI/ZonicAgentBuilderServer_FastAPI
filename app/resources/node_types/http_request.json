@@ -1,0 +1,139 @@
+{
+  "type": "http_request",
+  "label": "HTTP Request",
+  "icon": "bi-cloud-arrow-up-fill",
+  "color": "#06b6d4",
+  "description": "Makes an outbound HTTP request.",
+  "defaultNamePrefix": "HTTP",
+  "defaultData": {
+    "label": "HTTP Request"
+  },
+  "defaultConfig": {
+    "method": "GET",
+    "url": "",
+    "headers": [],
+    "body": "",
+    "outputSchema": [],
+    "timeoutSeconds": 30,
+    "stateUpdates": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Request",
+        "fields": [
+          {
+            "key": "config.method",
+            "label": "Method",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "GET",
+                "label": "GET"
+              },
+              {
+                "value": "POST",
+                "label": "POST"
+              },
+              {
+                "value": "PUT",
+                "label": "PUT"
+              },
+              {
+                "value": "PATCH",
+                "label": "PATCH"
+              },
+              {
+                "value": "DELETE",
+                "label": "DELETE"
+              }
+            ],
+            "defaultValue": "GET"
+          },
+          {
+            "key": "config.url",
+            "label": "URL",
+            "type": "expression",
+            "required": true,
+            "description": "Supports variable references in the URL."
+          }
+        ]
+      },
+      {
+        "title": "Headers",
+        "fields": [
+          {
+            "key": "config.headers",
+            "label": "Request Headers",
+            "type": "key_value_list"
+          }
+        ]
+      },
+      {
+        "title": "Body",
+        "fields": [
+          {
+            "key": "config.body",
+            "label": "Request Body",
+            "type": "expression",
+            "rows": 4,
+            "description": "Supports variable references."
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      },
+      {
+        "type": "accordion",
+        "label": "Advanced",
+        "defaultOpen": false,
+        "fields": [
+          {
+            "key": "config.timeoutSeconds",
+            "label": "Timeout (seconds)",
+            "type": "number",
+            "defaultValue": 30
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": {
+        "type": "integer"
+      },
+      "body": {
+        "type": "string"
+      }
+    }
+  },
+  "validationRules": [
+    "required_name",
+    "required_url"
+  ],
+  "sortOrder": 6
+}

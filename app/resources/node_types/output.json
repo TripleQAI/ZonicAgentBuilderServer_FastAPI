@@ -1,0 +1,36 @@
+{
+  "type": "output",
+  "label": "Output",
+  "icon": "bi-box-arrow-right",
+  "color": "#10b981",
+  "description": "Terminal output node — ends the workflow and returns a result.",
+  "defaultNamePrefix": "Output",
+  "defaultData": {
+    "label": "Output"
+  },
+  "defaultConfig": {
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "$ref": "section.variable_updates"
+      }
+    ]
+  },
+  "outputSchema": {},
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 11
+}

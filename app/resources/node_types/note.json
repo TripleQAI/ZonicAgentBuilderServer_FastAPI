@@ -1,0 +1,65 @@
+{
+  "type": "note",
+  "label": "Note",
+  "icon": "bi-sticky-fill",
+  "color": "#6b7280",
+  "description": "A non-executing annotation placed on the canvas.",
+  "defaultNamePrefix": "Note",
+  "defaultData": {
+    "label": "Note"
+  },
+  "defaultConfig": {
+    "text": "",
+    "color": "#6b7280"
+  },
+  "handles": {
+    "sources": [],
+    "targets": []
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Note Content",
+        "fields": [
+          {
+            "key": "config.text",
+            "label": "Note Text",
+            "type": "textarea",
+            "rows": 5
+          },
+          {
+            "key": "config.color",
+            "label": "Color",
+            "type": "select",
+            "options": [
+              {
+                "value": "#6b7280",
+                "label": "Gray"
+              },
+              {
+                "value": "#f9e2af",
+                "label": "Yellow"
+              },
+              {
+                "value": "#89dceb",
+                "label": "Sky Blue"
+              },
+              {
+                "value": "#a6e3a1",
+                "label": "Green"
+              },
+              {
+                "value": "#f38ba8",
+                "label": "Red"
+              }
+            ],
+            "defaultValue": "#6b7280"
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {},
+  "validationRules": [],
+  "sortOrder": 15
+}

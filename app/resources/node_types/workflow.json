@@ -1,0 +1,79 @@
+{
+  "type": "workflow",
+  "label": "Sub Flow",
+  "icon": "bi-diagram-3-fill",
+  "color": "#14b8a6",
+  "description": "Executes a child agent workflow as a sub-flow.",
+  "defaultNamePrefix": "SubFlow",
+  "defaultData": {
+    "label": "Sub Flow"
+  },
+  "defaultConfig": {
+    "agenticWorkflowId": "",
+    "inputs": [],
+    "outputSchema": [],
+    "stateUpdates": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Sub Flow Reference",
+        "fields": [
+          {
+            "key": "config.agenticWorkflowId",
+            "label": "Child Workflow",
+            "type": "agentic_workflow_selector",
+            "required": true,
+            "description": "Select a loaded agent to reference as a sub-flow."
+          },
+          {
+            "key": "config.agenticWorkflowId",
+            "label": "Relationship Status",
+            "type": "relationship_status"
+          }
+        ]
+      },
+      {
+        "title": "Input Mapping",
+        "fields": [
+          {
+            "key": "config.inputs",
+            "label": "Inputs",
+            "type": "mapping_list"
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "validationRules": [
+    "required_name",
+    "required_agentic_workflow_id"
+  ],
+  "sortOrder": 9
+}

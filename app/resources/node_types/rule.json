@@ -1,0 +1,77 @@
+{
+  "type": "rule",
+  "label": "Rule",
+  "icon": "bi-funnel-fill",
+  "color": "#f97316",
+  "description": "Evaluates conditional branches; each rule generates a canvas handle.",
+  "defaultNamePrefix": "Rule",
+  "defaultData": {
+    "label": "Rule"
+  },
+  "defaultConfig": {
+    "rules": [
+      {
+        "ruleId": "r_default",
+        "label": "True",
+        "conditions": [],
+        "conditionLogic": "AND"
+      },
+      {
+        "ruleId": "r_else",
+        "label": "Else",
+        "isDefault": true,
+        "conditions": [],
+        "conditionLogic": "AND"
+      }
+    ],
+    "outputSchema": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "r_default",
+        "position": "bottom",
+        "label": "True"
+      },
+      {
+        "id": "r_else",
+        "position": "bottom",
+        "label": "Else"
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Rule Branches",
+        "fields": [
+          {
+            "key": "config.rules",
+            "label": "Rules",
+            "type": "condition_builder",
+            "description": "Each rule creates a named output handle on the canvas node."
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "matchedRule": {
+        "type": "string"
+      }
+    }
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 8
+}

@@ -1,0 +1,100 @@
+{
+  "type": "approval",
+  "label": "Approval",
+  "icon": "bi-hand-thumbs-up-fill",
+  "color": "#f59e0b",
+  "description": "Pauses the workflow for a human approval gate.",
+  "defaultNamePrefix": "Approval",
+  "defaultData": {
+    "label": "Approval"
+  },
+  "defaultConfig": {
+    "message": "",
+    "approvers": [],
+    "timeoutHours": 24,
+    "responseVariable": "approval.response",
+    "outputSchema": [],
+    "stateUpdates": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "approved",
+        "position": "bottom",
+        "label": "Approved"
+      },
+      {
+        "id": "rejected",
+        "position": "right",
+        "label": "Rejected"
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Approval Request",
+        "fields": [
+          {
+            "key": "config.message",
+            "label": "Approval Message",
+            "type": "textarea",
+            "rows": 3
+          },
+          {
+            "key": "config.approvers",
+            "label": "Approvers",
+            "type": "key_value_list",
+            "description": "List approver identifiers (email, userId, role)."
+          },
+          {
+            "key": "config.timeoutHours",
+            "label": "Timeout (hours)",
+            "type": "number",
+            "defaultValue": 24
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      },
+      {
+        "type": "accordion",
+        "label": "Advanced",
+        "defaultOpen": false,
+        "fields": [
+          {
+            "key": "config.responseVariable",
+            "label": "Response Variable Path",
+            "type": "text",
+            "defaultValue": "approval.response",
+            "description": "Variable path to store the approval response."
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "approved": {
+        "type": "boolean"
+      }
+    }
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 12
+}

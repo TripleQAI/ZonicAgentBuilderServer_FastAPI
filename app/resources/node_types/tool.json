@@ -1,0 +1,118 @@
+{
+  "type": "tool",
+  "label": "Tool",
+  "icon": "bi-tools",
+  "color": "#7c3aed",
+  "description": "Invokes a registered tool (function, MCP, handoff, or UI view).",
+  "defaultNamePrefix": "Tool",
+  "defaultData": {
+    "label": "Tool"
+  },
+  "defaultConfig": {
+    "toolName": "",
+    "toolType": "function",
+    "inputs": [],
+    "outputSchema": [],
+    "handoffTarget": "",
+    "schema": {},
+    "stateUpdates": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Tool Configuration",
+        "fields": [
+          {
+            "key": "config.toolName",
+            "label": "Tool Name",
+            "type": "text",
+            "required": true
+          },
+          {
+            "key": "config.toolType",
+            "label": "Tool Type",
+            "type": "select",
+            "options": [
+              {
+                "value": "function",
+                "label": "Function"
+              },
+              {
+                "value": "handoff",
+                "label": "Handoff"
+              },
+              {
+                "value": "ui_view",
+                "label": "UI View"
+              },
+              {
+                "value": "mcp",
+                "label": "MCP"
+              }
+            ],
+            "defaultValue": "function"
+          }
+        ]
+      },
+      {
+        "title": "Input Mapping",
+        "fields": [
+          {
+            "key": "config.inputs",
+            "label": "Inputs",
+            "type": "mapping_list"
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      },
+      {
+        "type": "accordion",
+        "label": "Advanced",
+        "defaultOpen": false,
+        "fields": [
+          {
+            "key": "config.handoffTarget",
+            "label": "Handoff Target Node ID",
+            "type": "text",
+            "description": "Required when toolType is 'handoff'."
+          },
+          {
+            "key": "config.schema",
+            "label": "Tool Schema",
+            "type": "json"
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "validationRules": [
+    "required_name",
+    "required_tool_name"
+  ],
+  "sortOrder": 14
+}

@@ -1,0 +1,75 @@
+[
+  {
+    "name": "http_get",
+    "title": "HTTP GET",
+    "description": "Fetch a URL and return the response body.",
+    "tool_type": "function",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "url": { "type": "string" },
+        "headers": { "type": "object" }
+      },
+      "required": ["url"]
+    },
+    "default_config": {}
+  },
+  {
+    "name": "db_lookup",
+    "title": "Database Lookup",
+    "description": "Read rows from a governed view by name.",
+    "tool_type": "function",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "view": { "type": "string" },
+        "filters": { "type": "array" }
+      },
+      "required": ["view"]
+    },
+    "default_config": {}
+  },
+  {
+    "name": "handoff_to_agent",
+    "title": "Hand Off To Agent",
+    "description": "Transfer the conversation to another agent node.",
+    "tool_type": "handoff",
+    "schema": {
+      "type": "object",
+      "properties": { "targetNodeId": { "type": "string" } },
+      "required": ["targetNodeId"]
+    },
+    "default_config": {}
+  },
+  {
+    "name": "show_view",
+    "title": "Show UI View",
+    "description": "Render a registered UI view to the user.",
+    "tool_type": "ui_view",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "viewId": { "type": "string" },
+        "params": { "type": "object" }
+      },
+      "required": ["viewId"]
+    },
+    "default_config": {}
+  },
+  {
+    "name": "mcp_server",
+    "title": "MCP Server",
+    "description": "Tools exposed by a configured MCP server.",
+    "tool_type": "mcp",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "serverUrl": { "type": "string" },
+        "transport": { "type": "string", "enum": ["stdio", "sse", "http"] },
+        "tools": { "type": "array" }
+      },
+      "required": ["serverUrl"]
+    },
+    "default_config": { "transport": "http", "tools": [] }
+  }
+]

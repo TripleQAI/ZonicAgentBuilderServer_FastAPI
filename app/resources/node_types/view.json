@@ -1,0 +1,67 @@
+{
+  "type": "view",
+  "label": "View",
+  "icon": "bi-filetype-html",
+  "color": "#ec4899",
+  "description": "Prepares an HTML fragment that can embed node results and flow variable data.",
+  "defaultNamePrefix": "View",
+  "defaultData": {
+    "label": "View"
+  },
+  "defaultConfig": {
+    "viewMode": "html_template",
+    "htmlTemplate": "<div>\n  <!-- Reference variables with {{variable.path}} -->\n</div>",
+    "templateConfig": "{\n  \"data\": {},\n  \"html_template\": \"\",\n  \"attached_config\": {}\n}",
+    "outputSchema": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "HTML Template",
+        "fields": [
+          {
+            "key": "config.viewMode",
+            "label": "HTML Template",
+            "type": "view_template",
+            "required": true
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "html": {
+        "type": "string"
+      }
+    }
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 16
+}

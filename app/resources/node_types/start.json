@@ -1,0 +1,49 @@
+{
+  "type": "start",
+  "label": "Start",
+  "icon": "bi-play-circle-fill",
+  "color": "#22c55e",
+  "description": "Entry point of the workflow.",
+  "defaultNamePrefix": "Start",
+  "defaultData": {
+    "label": "Start"
+  },
+  "defaultConfig": {
+    "interfaceInputs": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": []
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Interface Inputs",
+        "fields": [
+          {
+            "key": "config.interfaceInputs",
+            "label": "Interface Inputs",
+            "type": "schema_builder",
+            "description": "Variables passed in when this workflow is invoked."
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      }
+    ]
+  },
+  "outputSchema": {},
+  "validationRules": [],
+  "sortOrder": 1
+}

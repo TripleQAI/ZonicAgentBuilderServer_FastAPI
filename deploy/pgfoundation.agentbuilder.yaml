@@ -1,0 +1,38 @@
+# pgfoundation datasource registration for the Agent Workflow Builder.
+#
+# This file lives HERE, not in ZonicPostgresqlServer_FastAPI. That project is
+# consumed as a service and is never modified. Point it at this file with:
+#
+#   PGF_CONFIG=<abs path>/deploy/pgfoundation.agentbuilder.yaml
+#
+# The DSN is resolved by the gateway's own ${env:...} interpolation, so no
+# credential is stored in this repository.
+
+datasources:
+  - name: agentbuilder                 # must equal PG_GATEWAY_DATASOURCE
+    dsn: ${env:AGENTBUILDER_DSN}
+    role: standalone
+    pool: { min_size: 2, max_size: 10, acquire_timeout_seconds: 5 }
+    statement_timeout_ms: 10000
+    read_only: false
+
+api:
+  # Explicit, not merely defaulted: this consumer never sends SQL text.
+  enable_raw_sql: false
+  default_row_format: dict
+  max_response_rows: 50000
+  request_timeout_ms: 15000
+
+resilience:
+  retry: { max_attempts: 3, base_backoff_ms: 20, max_backoff_ms: 1000, jitter: true }
+  circuit_breaker: { enabled: true, failure_threshold: 5, reset_timeout_seconds: 30 }
+
+# Off for local development, matching the gateway default. Turn on for any
+# shared deployment and set PG_GATEWAY_AUTH_HEADER on this service (decision D9).
+auth:
+  enabled: false
+
+observability:
+  provider: none
+  metrics: { enabled: false }
+  tracing: { enabled: false }

@@ -1,0 +1,141 @@
+{
+  "type": "agent",
+  "label": "Agent",
+  "icon": "bi-robot",
+  "color": "#6366f1",
+  "description": "Invokes an agentic loop with tools and a model.",
+  "defaultNamePrefix": "Agent",
+  "defaultData": {
+    "label": "Agent"
+  },
+  "defaultConfig": {
+    "model": "claude-sonnet-4-6",
+    "strategy": "react",
+    "systemPrompt": "",
+    "tools": [],
+    "maxIterations": 10,
+    "includeThoughts": false,
+    "stateUpdates": [],
+    "outputSchema": [],
+    "handoffTarget": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Definition",
+        "fields": [
+          {
+            "key": "config.model",
+            "label": "Model",
+            "type": "select",
+            "required": true,
+            "options": {
+              "$ref": "options.models"
+            },
+            "defaultValue": "claude-sonnet-4-6"
+          },
+          {
+            "key": "config.strategy",
+            "label": "Agent Strategy",
+            "type": "select",
+            "options": [
+              {
+                "value": "react",
+                "label": "ReAct"
+              },
+              {
+                "value": "plan_exec",
+                "label": "Plan + Execute"
+              },
+              {
+                "value": "custom",
+                "label": "Custom"
+              }
+            ],
+            "defaultValue": "react"
+          }
+        ]
+      },
+      {
+        "title": "Instructions",
+        "fields": [
+          {
+            "key": "config.systemPrompt",
+            "label": "System Prompt",
+            "type": "markdown"
+          }
+        ]
+      },
+      {
+        "title": "Tools",
+        "fields": [
+          {
+            "key": "config.tools",
+            "label": "Tools",
+            "type": "tool_list"
+          }
+        ]
+      },
+      {
+        "title": "Handoff",
+        "fields": [
+          {
+            "key": "config.handoffTarget",
+            "label": "Handoff Targets",
+            "type": "node_multiselect",
+            "description": "When this agent completes, hand off execution to each selected node."
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      },
+      {
+        "type": "accordion",
+        "label": "Advanced",
+        "defaultOpen": false,
+        "fields": [
+          {
+            "key": "config.maxIterations",
+            "label": "Max Iterations",
+            "type": "number",
+            "defaultValue": 10
+          },
+          {
+            "key": "config.includeThoughts",
+            "label": "Include Thoughts",
+            "type": "switch",
+            "defaultValue": false
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 3
+}

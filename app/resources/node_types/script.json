@@ -1,0 +1,96 @@
+{
+  "type": "script",
+  "label": "Script",
+  "icon": "bi-file-code-fill",
+  "color": "#eab308",
+  "description": "Runs a custom JavaScript or Python snippet.",
+  "defaultNamePrefix": "Script",
+  "defaultData": {
+    "label": "Script"
+  },
+  "defaultConfig": {
+    "language": "javascript",
+    "code": "/**\n * Example Script\n *\n * Inputs are available on the `input` object.\n * Example: `input.score` (from Input Variables section).\n *\n * Return an object that matches the Output schema.\n * - In this node, you can read it as `nodeOutput.result`.\n * - In other nodes, use: `nodes.<nodeName>.result.<field>`\n */\n\nreturn {};\n",
+    "inputs": [],
+    "outputSchema": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Input Variables",
+        "fields": [
+          {
+            "key": "config.inputs",
+            "label": "Input Mapping",
+            "type": "mapping_list",
+            "description": "Mapped variables are accessible in the code as input.key — e.g. input.queryResponse."
+          }
+        ]
+      },
+      {
+        "title": "Script",
+        "fields": [
+          {
+            "key": "config.language",
+            "label": "Language",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "javascript",
+                "label": "JavaScript"
+              },
+              {
+                "value": "python",
+                "label": "Python"
+              },
+              {
+                "value": "typescript",
+                "label": "TypeScript"
+              }
+            ],
+            "defaultValue": "javascript"
+          },
+          {
+            "key": "config.code",
+            "label": "Code",
+            "type": "code",
+            "required": true,
+            "rows": 10
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "validationRules": [
+    "required_name",
+    "required_code"
+  ],
+  "sortOrder": 5
+}

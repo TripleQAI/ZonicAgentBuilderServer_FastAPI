@@ -1,0 +1,126 @@
+{
+  "type": "external_agent",
+  "label": "External Agent",
+  "icon": "bi-box-arrow-up-right",
+  "color": "#a855f7",
+  "description": "Calls an agent hosted externally via HTTP.",
+  "defaultNamePrefix": "ExtAgent",
+  "defaultData": {
+    "label": "External Agent"
+  },
+  "defaultConfig": {
+    "endpoint": "",
+    "authType": "none",
+    "apiKey": "",
+    "inputMapping": [],
+    "outputSchema": [],
+    "timeoutSeconds": 30,
+    "retries": 0,
+    "stateUpdates": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Connection",
+        "fields": [
+          {
+            "key": "config.endpoint",
+            "label": "Endpoint URL",
+            "type": "expression",
+            "required": true,
+            "description": "Full URL of the external agent endpoint."
+          },
+          {
+            "key": "config.authType",
+            "label": "Auth Type",
+            "type": "select",
+            "options": [
+              {
+                "value": "none",
+                "label": "None"
+              },
+              {
+                "value": "bearer",
+                "label": "Bearer Token"
+              },
+              {
+                "value": "apikey",
+                "label": "API Key Header"
+              },
+              {
+                "value": "basic",
+                "label": "Basic Auth"
+              }
+            ],
+            "defaultValue": "none"
+          },
+          {
+            "key": "config.apiKey",
+            "label": "API Key / Token",
+            "type": "expression",
+            "description": "Supports variable references, e.g. {{secrets.myKey}}"
+          }
+        ]
+      },
+      {
+        "title": "Input Mapping",
+        "fields": [
+          {
+            "key": "config.inputMapping",
+            "label": "Input Fields",
+            "type": "mapping_list"
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      },
+      {
+        "type": "accordion",
+        "label": "Advanced",
+        "defaultOpen": false,
+        "fields": [
+          {
+            "key": "config.timeoutSeconds",
+            "label": "Timeout (seconds)",
+            "type": "number",
+            "defaultValue": 30
+          },
+          {
+            "key": "config.retries",
+            "label": "Retries",
+            "type": "number",
+            "defaultValue": 0
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object"
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 4
+}

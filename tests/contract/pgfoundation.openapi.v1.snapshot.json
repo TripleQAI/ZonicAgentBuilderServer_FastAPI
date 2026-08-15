@@ -1,0 +1,82 @@
+{
+  "GET /health": {
+    "request": null,
+    "response": "HealthOut"
+  },
+  "GET /ready": {
+    "request": null,
+    "response": "HealthOut"
+  },
+  "POST /v1/batch": {
+    "request": "BatchRequest",
+    "response": "BatchResult"
+  },
+  "GET /v1/datasources": {
+    "request": null,
+    "response": "DataSourceList"
+  },
+  "POST /v1/datasources/{name}/copy": {
+    "request": "CopyIn",
+    "response": "ExecuteOut"
+  },
+  "POST /v1/datasources/{name}/execute": {
+    "request": "QueryIn",
+    "response": "ExecuteOut"
+  },
+  "POST /v1/datasources/{name}/execute-many": {
+    "request": "ExecuteManyIn",
+    "response": "ExecuteOut"
+  },
+  "POST /v1/datasources/{name}/fetch-since": {
+    "request": "FetchSinceIn",
+    "response": "PageOut"
+  },
+  "POST /v1/datasources/{name}/function": {
+    "request": "FunctionIn",
+    "response": "QueryOut"
+  },
+  "POST /v1/datasources/{name}/function/stream": {
+    "request": "FunctionIn",
+    "response": null
+  },
+  "POST /v1/datasources/{name}/interval": {
+    "request": "IntervalIn",
+    "response": "QueryOut"
+  },
+  "POST /v1/datasources/{name}/interval/stream": {
+    "request": "IntervalIn",
+    "response": null
+  },
+  "POST /v1/datasources/{name}/procedure": {
+    "request": "ProcedureIn",
+    "response": "QueryOut"
+  },
+  "POST /v1/datasources/{name}/query": {
+    "request": "QueryIn",
+    "response": "QueryOut"
+  },
+  "POST /v1/datasources/{name}/query/stream": {
+    "request": "QueryIn",
+    "response": null
+  },
+  "GET /v1/datasources/{name}/subscribe/{channel}": {
+    "request": null,
+    "response": null
+  },
+  "POST /v1/datasources/{name}/view": {
+    "request": "ViewIn",
+    "response": "QueryOut"
+  },
+  "POST /v1/datasources/{name}/view/stream": {
+    "request": "ViewIn",
+    "response": null
+  },
+  "GET /v1/health": {
+    "request": null,
+    "response": "HealthOut"
+  },
+  "GET /v1/ready": {
+    "request": null,
+    "response": "HealthOut"
+  }
+}

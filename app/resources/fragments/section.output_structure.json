@@ -1,0 +1,15 @@
+{
+  "title": "Output Structure",
+  "fields": [
+    {
+      "key": "config.outputStructure",
+      "label": "Fields",
+      "type": "key_value_list",
+      "addLabel": "Add Field",
+      "placeholderKey": "fieldName",
+      "placeholderVal": "Value or {{path}}",
+      "showType": true,
+      "description": "Map named output fields from this node's response. Reference downstream as {{nodes.NODE_NAME.output.FIELD_NAME}}."
+    }
+  ]
+}

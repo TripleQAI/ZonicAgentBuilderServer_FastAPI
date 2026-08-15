@@ -1,0 +1,113 @@
+{
+  "type": "human_input",
+  "label": "Human Input",
+  "icon": "bi-person-fill",
+  "color": "#0ea5e9",
+  "description": "Pauses the workflow to collect input from a human user.",
+  "defaultNamePrefix": "HumanInput",
+  "defaultData": {
+    "label": "Human Input"
+  },
+  "defaultConfig": {
+    "prompt": "",
+    "inputType": "text",
+    "required": true,
+    "responseVariable": "human.response",
+    "outputSchema": [],
+    "stateUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Input Configuration",
+        "fields": [
+          {
+            "key": "config.prompt",
+            "label": "Prompt",
+            "type": "textarea",
+            "required": true,
+            "rows": 3
+          },
+          {
+            "key": "config.inputType",
+            "label": "Input Type",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "text",
+                "label": "Text"
+              },
+              {
+                "value": "number",
+                "label": "Number"
+              },
+              {
+                "value": "file",
+                "label": "File"
+              },
+              {
+                "value": "choice",
+                "label": "Multiple Choice"
+              }
+            ],
+            "defaultValue": "text"
+          },
+          {
+            "key": "config.required",
+            "label": "Required",
+            "type": "switch",
+            "defaultValue": true
+          }
+        ]
+      },
+      {
+        "type": "accordion",
+        "label": "Advanced",
+        "defaultOpen": false,
+        "fields": [
+          {
+            "key": "config.responseVariable",
+            "label": "Response Variable Path",
+            "type": "text",
+            "defaultValue": "human.response",
+            "description": "Variable path to store the collected input."
+          },
+          {
+            "key": "config.stateUpdates",
+            "label": "State Updates",
+            "type": "state_update_list"
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "value": {
+        "type": "string"
+      }
+    }
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 13
+}

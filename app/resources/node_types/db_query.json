@@ -1,0 +1,154 @@
+{
+  "type": "db_query",
+  "label": "DB Query",
+  "icon": "bi-database-fill",
+  "color": "#0284c7",
+  "description": "Executes a SQL query against a configured database connection.",
+  "defaultNamePrefix": "DBQuery",
+  "defaultData": {
+    "label": "DB Query"
+  },
+  "defaultConfig": {
+    "connectionId": "",
+    "databaseType": "postgresql",
+    "query": "",
+    "parameters": [],
+    "maxRows": 1000,
+    "timeoutSeconds": 30,
+    "outputSchema": [],
+    "rowSchema": {},
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "default",
+        "position": "bottom",
+        "label": ""
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Connection",
+        "fields": [
+          {
+            "key": "config.databaseType",
+            "label": "Database Type",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "postgresql",
+                "label": "PostgreSQL"
+              },
+              {
+                "value": "mssql",
+                "label": "MS SQL Server"
+              },
+              {
+                "value": "mysql",
+                "label": "MySQL / MariaDB"
+              },
+              {
+                "value": "mongodb",
+                "label": "MongoDB"
+              },
+              {
+                "value": "sqlite",
+                "label": "SQLite"
+              },
+              {
+                "value": "oracle",
+                "label": "Oracle"
+              }
+            ],
+            "defaultValue": "postgresql"
+          },
+          {
+            "key": "config.connectionId",
+            "label": "Connection ID",
+            "type": "text",
+            "required": true,
+            "description": "Identifier of the registered database connection to use."
+          }
+        ]
+      },
+      {
+        "title": "Query",
+        "fields": [
+          {
+            "key": "config.query",
+            "label": "SQL Query",
+            "type": "code",
+            "language": "sql",
+            "required": true,
+            "rows": 8,
+            "description": "SQL to execute. Use :param_name placeholders for bound parameters."
+          },
+          {
+            "key": "config.timeoutSeconds",
+            "label": "Timeout (seconds)",
+            "type": "number",
+            "defaultValue": 30
+          }
+        ]
+      },
+      {
+        "title": "Parameters",
+        "fields": [
+          {
+            "key": "config.parameters",
+            "label": "Bound Parameters",
+            "type": "key_value_list",
+            "description": "Key-value pairs bound to :param_name placeholders in the query. Values support {{variable.path}} expressions."
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      },
+      {
+        "type": "accordion",
+        "label": "Advanced",
+        "defaultOpen": false,
+        "fields": [
+          {
+            "key": "config.rowSchema",
+            "label": "Row Schema (JSON Schema)",
+            "type": "json",
+            "description": "JSON Schema describing the expected shape of each result row (used for validation)."
+          }
+        ]
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "rows": {
+        "type": "array",
+        "description": "Array of result rows (SELECT)."
+      },
+      "rowCount": {
+        "type": "number",
+        "description": "Number of rows affected or returned."
+      }
+    }
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 17
+}

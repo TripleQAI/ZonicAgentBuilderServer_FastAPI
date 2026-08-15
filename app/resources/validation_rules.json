@@ -1,0 +1,53 @@
+{
+  "_comment": [
+    "Per-node-type validation rules, as data (MIGRATION_PLAN.md §7.6 / L8).",
+    "Adding a check for a node type is an edit here, not a code change.",
+    "Kept out of node_types/*.json because those are generated from the source",
+    "registry and are verified byte-for-byte by gen_registry_resources.py --check.",
+    "Message templates take {label} and {type}. Severity is 'error' or 'warning'.",
+    "Wording is copied from agentBuilder/services/workflow_validator.py so the",
+    "validation modal renders identical text."
+  ],
+
+  "llm": [
+    { "rule": "required", "path": "config.model", "severity": "warning",
+      "message": "Node {label} ({type}): model is not configured" }
+  ],
+
+  "agent": [
+    { "rule": "required", "path": "config.model", "severity": "warning",
+      "message": "Node {label} ({type}): model is not configured" }
+  ],
+
+  "workflow": [
+    { "rule": "required", "path": "config.agenticWorkflowId", "severity": "warning",
+      "message": "Sub Flow node {label}: child workflow ID is not configured" }
+  ],
+
+  "rule": [
+    { "rule": "non_empty_list", "path": "config.rules", "severity": "warning",
+      "message": "Rule node {label}: no rule branches defined" },
+    { "rule": "each_item_requires", "path": "config.rules", "field": "ruleId",
+      "severity": "warning", "once": true,
+      "message": "Rule node {label}: a branch is missing ruleId" }
+  ],
+
+  "variable": [
+    { "rule": "each_item_requires", "path": "config.updates", "field": "path",
+      "severity": "warning",
+      "message": "Variable node {label}: an update entry is missing variable path" }
+  ],
+
+  "output": [
+    { "rule": "non_empty_list", "path": "config.outputMapping", "severity": "warning",
+      "message": "Output node {label}: no output mappings defined" }
+  ],
+
+  "tool": [
+    { "rule": "required", "path": "config.toolName", "severity": "error",
+      "message": "Tool node {label}: toolName is required" },
+    { "rule": "required_when", "path": "config.handoffTarget",
+      "when": "config.toolType", "equals": "handoff", "severity": "warning",
+      "message": "Tool node {label}: handoff type requires a handoffTarget" }
+  ]
+}

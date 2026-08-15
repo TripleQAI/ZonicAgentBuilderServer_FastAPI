@@ -1,0 +1,105 @@
+{
+  "type": "guardrail",
+  "label": "Guardrail",
+  "icon": "bi-shield-fill-check",
+  "color": "#ef4444",
+  "description": "Enforces safety or policy constraints on the flow.",
+  "defaultNamePrefix": "Guardrail",
+  "defaultData": {
+    "label": "Guardrail"
+  },
+  "defaultConfig": {
+    "inputMapping": [],
+    "policy": "",
+    "action": "block",
+    "outputSchema": [],
+    "stateUpdates": [],
+    "variableUpdates": []
+  },
+  "handles": {
+    "sources": [
+      {
+        "id": "pass",
+        "position": "bottom",
+        "label": "Pass"
+      },
+      {
+        "id": "fail",
+        "position": "right",
+        "label": "Fail"
+      }
+    ],
+    "targets": [
+      {
+        "id": "default",
+        "position": "top",
+        "label": ""
+      }
+    ]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Input Mapping",
+        "fields": [
+          {
+            "key": "config.inputMapping",
+            "label": "Input Mapping",
+            "type": "mapping_list"
+          }
+        ]
+      },
+      {
+        "title": "Policy",
+        "fields": [
+          {
+            "key": "config.policy",
+            "label": "Policy / Rules",
+            "type": "textarea",
+            "required": true,
+            "rows": 4
+          },
+          {
+            "key": "config.action",
+            "label": "On Fail",
+            "type": "select",
+            "required": true,
+            "options": [
+              {
+                "value": "block",
+                "label": "Block"
+              },
+              {
+                "value": "warn",
+                "label": "Warn"
+              },
+              {
+                "value": "redirect",
+                "label": "Redirect"
+              }
+            ],
+            "defaultValue": "block"
+          }
+        ]
+      },
+      {
+        "$ref": "section.output_structure"
+      },
+      {
+        "$ref": "section.variable_updates"
+      }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "passed": {
+        "type": "boolean"
+      }
+    }
+  },
+  "validationRules": [
+    "required_name"
+  ],
+  "sortOrder": 7
+}

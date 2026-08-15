@@ -1,0 +1,11 @@
+{
+  "title": "Variable Updates",
+  "fields": [
+    {
+      "key": "config.variableUpdates",
+      "label": "Updates",
+      "type": "state_update_list",
+      "description": "Update workflow variables when this node completes."
+    }
+  ]
+}
