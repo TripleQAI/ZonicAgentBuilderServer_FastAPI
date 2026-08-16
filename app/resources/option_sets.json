@@ -39,6 +39,24 @@
     { "value": "object",  "label": "object" }
   ],
 
+  "variableTypes": [
+    { "value": "string",       "label": "string",       "color": "#89b4fa" },
+    { "value": "integer",      "label": "integer",      "color": "#a6e3a1" },
+    { "value": "number",       "label": "number",       "color": "#a6e3a1" },
+    { "value": "boolean",      "label": "boolean",      "color": "#f9e2af" },
+    { "value": "object",       "label": "object",       "color": "#cba6f7" },
+    { "value": "array",        "label": "array",        "color": "#cba6f7" },
+    { "value": "json",         "label": "json",         "color": "#cba6f7" },
+    { "value": "enum",         "label": "enum",         "color": "#f38ba8" },
+    { "value": "date",         "label": "date",         "color": "#94e2d5" },
+    { "value": "datetime",     "label": "datetime",     "color": "#94e2d5" },
+    { "value": "file",         "label": "file",         "color": "#fab387" },
+    { "value": "url",          "label": "url",          "color": "#89dceb" },
+    { "value": "secret",       "label": "secret",       "color": "#f38ba8" },
+    { "value": "message",      "label": "message",      "color": "#89b4fa" },
+    { "value": "message_list", "label": "message_list", "color": "#89b4fa" }
+  ],
+
   "messageRoles": [
     { "value": "system",    "label": "System" },
     { "value": "user",      "label": "User" },
