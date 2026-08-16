@@ -2,6 +2,14 @@
 --
 --   psql "$AGENTBUILDER_DSN" -v ON_ERROR_STOP=1 -f db/run_all.sql
 --
+-- NO psql? Run 000_preflight.sql first and read the report, then paste these
+-- files into the SQL editor one at a time, in this order:
+--
+--     001, 002, 003, 004, 005, 009, 010
+--
+-- None of them uses a psql meta-command, so each pastes and runs as-is. Only
+-- this file and 011 need psql (or, for 011, a `SET agentbuilder.role` first).
+--
 -- Everything lives in the agent_builder schema, on top of the tables the Django
 -- app already created there. Every file is idempotent, so re-running is a no-op
 -- that also picks up any changed view or procedure.

@@ -1,30 +1,47 @@
 -- 011_grants.sql — least privilege for the role the gateway connects as.
 --
--- Defence in depth (MIGRATION_PLAN.md §8.11): raw SQL is disabled at the
+-- Defence in depth (MIGRATION_PLAN.md §8.12): raw SQL is disabled at the
 -- gateway AND table-level DML is revoked here, so the write surface is exactly
--- the procedures below even if the first control were misconfigured.
---
--- The procedures are SECURITY DEFINER, so they still write the tables while the
+-- the procedures below even if the first control were misconfigured. The
+-- procedures are SECURITY DEFINER, so they still write the tables while the
 -- caller cannot.
 --
---     psql "$AGENTBUILDER_DSN" -v ON_ERROR_STOP=1 -v pgf_role=agentbuilder_app \
---          -f db/011_grants.sql
+-- Name the role first, then run this file. No psql meta-commands are used, so
+-- it works in a web SQL editor as well as in psql:
+--
+--     SET agentbuilder.role = 'agentbuilder_app';
+--     \i db/011_grants.sql          -- or paste the rest of this file
+--
+-- OPTIONAL. Skip it if the gateway connects as the database owner, which is the
+-- usual arrangement on a managed service such as Tiger Cloud — an owner cannot
+-- be meaningfully restricted this way, and REVOKE on your own tables is a
+-- no-op. It earns its place when the gateway has a dedicated, non-owner role.
 --
 -- WARNING: if Django still writes to these tables it must connect as a
 -- different role, or it will lose its own INSERT/UPDATE rights.
 
-\if :{?pgf_role}
-\else
-\set pgf_role 'fshadmin'
-\endif
-
 DO $$
 DECLARE
-    v_role text := :'pgf_role';
+    v_role text := NULLIF(current_setting('agentbuilder.role', true), '');
 BEGIN
+    IF v_role IS NULL THEN
+        RAISE EXCEPTION 'no role named'
+            USING HINT = 'Run:  SET agentbuilder.role = ''your_role'';  first.';
+    END IF;
+
     IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = v_role) THEN
-        RAISE NOTICE 'role % does not exist — skipping grants', v_role;
-        RETURN;
+        RAISE EXCEPTION 'role % does not exist', v_role;
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM pg_namespace n
+        JOIN pg_roles r ON r.oid = n.nspowner
+        WHERE n.nspname = 'agent_builder' AND r.rolname = v_role
+    ) THEN
+        RAISE NOTICE
+            'Role % owns the agent_builder schema, so REVOKE cannot restrict it. '
+            'Granting reads and executes anyway; skip this file unless you have a '
+            'dedicated non-owner role for the gateway.', v_role;
     END IF;
 
     EXECUTE format('GRANT USAGE ON SCHEMA agent_builder TO %I', v_role);
@@ -58,6 +75,8 @@ BEGIN
                     agent_builder."agentBuilder_nodetypedefinition",
                     agent_builder."agentBuilder_tooldefinition"
                     FROM %I', v_role);
+
+    RAISE NOTICE 'Grants applied for %.', v_role;
 END;
 $$;
 

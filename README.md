@@ -70,19 +70,37 @@ $env:AGENTBUILDER_DSN = "postgresql://user:pass@host:5432/dbname"
 
 | File | What it does |
 |---|---|
-| `001_extensions.sql` | `pgcrypto`, and the `agent_builder` schema |
+| `000_preflight.sql` | **Read only.** Run this first — reports server version, which tables exist and roughly how many rows they hold, any missing column, anything that would block the install, and what a re-run would replace |
+| `001_extensions.sql` | The `agent_builder` schema, and a check that `gen_random_uuid()` is available |
 | `002_schema.sql` | Base tables — a **no-op** on a Django-created database; present so a clean install works |
 | `003_functions_triggers.sql` | `updated_at` triggers Django never created |
 | `004_indexes.sql` | The eleven indexes the access paths need |
-| `005_adapt_existing_schema.sql` | **Verifies** the tables have the expected columns and fails loudly if not; adds column defaults, a unique index on tool name, and the `tool_type` CHECK |
+| `005_adapt_existing_schema.sql` | **Verifies** 28 expected columns and fails loudly if any is missing; adds column defaults, a unique index on tool name, and the `tool_type` CHECK |
 | `009_api_views.sql` | The read surface |
 | `010_api_procedures.sql` | The write surface |
-| `011_grants.sql` | Least privilege; run separately with your role name |
+| `011_grants.sql` | Least privilege. Optional — skip it when the gateway connects as the database owner |
+
+### Without psql — the Tiger Cloud SQL editor
+
+Only `run_all.sql` and `011` use psql meta-commands. Run `000_preflight.sql`,
+read the report, then paste these in order:
+
+```
+001 → 002 → 003 → 004 → 005 → 009 → 010
+```
+
+For `011`, run `SET agentbuilder.role = 'your_role';` first, then paste the rest.
 
 Every file is idempotent, so re-running picks up changed views and procedures.
 `005` matters most: `CREATE TABLE IF NOT EXISTS` silently skips a table that
 already exists, so a column mismatch would otherwise surface much later as a
 confusing runtime error.
+
+Nothing here writes to a base table, so it is safe to run against a database
+that already holds migrated data. The views also `COALESCE` every jsonb column
+they concatenate — `NULL || anything` is `NULL` in jsonb, so one null
+`raw_json` would otherwise blank a whole exported document rather than degrade
+a single field.
 
 Django applies field defaults in Python, so its tables have none. The procedures
 therefore supply `id`, `created_at` and `updated_at` explicitly and work with or
@@ -208,8 +226,12 @@ mypy app
   P1.0) is **unverified against a real server**. `FakeGateway` reimplements the
   same semantics in Python, and the two can drift until the live run happens.
   Treat that as the next task, not as covered.
-- What *is* verified about the SQL: all 107 statements and all 10 routine bodies
-  parse with `libpg_query`, PostgreSQL's own parser. That catches syntax, not
-  semantics — it does not prove a column exists or a procedure does the right
-  thing. `005_adapt_existing_schema.sql` is the run-time check for the former.
+- What *is* verified about the SQL: all 84 statements and 13 of the 14 plpgsql
+  bodies parse with `libpg_query`, PostgreSQL's own parser. The exception is
+  `set_updated_at`, where libpg_query's JSON serializer emits malformed output
+  for any `RETURNS trigger` function; the same statements parse cleanly when
+  `NEW` is an ordinary record, so it is a tool limitation, not a defect.
+  Parsing catches syntax, not semantics — it does not prove a column exists or
+  that a procedure does the right thing. `000_preflight.sql` and
+  `005_adapt_existing_schema.sql` are the run-time checks for the former.
 - Frontend parity work (P4–P8) is tracked in the plan.

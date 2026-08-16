@@ -3,15 +3,17 @@
 # The application never runs DDL; it has no database connection to run it on.
 # This is the one place schema is applied.
 #
-#   $env:AGENTBUILDER_DSN = "postgresql://user:pass@localhost:5434/agentworkflowbuilder"
-#   .\scripts\init_db.ps1                       # apply schema + seeds
+#   $env:AGENTBUILDER_DSN = "postgresql://user:pass@host:5432/dbname"
+#   .\scripts\init_db.ps1 -Preflight           # read-only report, changes nothing
+#   .\scripts\init_db.ps1                       # apply views, procedures, indexes
 #   .\scripts\init_db.ps1 -Role agentbuilder_app  # also apply grants
 #   .\scripts\init_db.ps1 -Drop                 # tear down first
 
 param(
     [string]$Dsn  = $env:AGENTBUILDER_DSN,
     [string]$Role = "",
-    [switch]$Drop
+    [switch]$Drop,
+    [switch]$Preflight
 )
 
 if (-not $Dsn) {
@@ -22,6 +24,12 @@ if (-not $Dsn) {
 $db = Join-Path $PSScriptRoot "..\db" | Resolve-Path
 Push-Location $db
 try {
+    if ($Preflight) {
+        # Read-only. Run this before anything else against a database with data.
+        psql $Dsn -v ON_ERROR_STOP=1 -f 000_preflight.sql
+        exit $LASTEXITCODE
+    }
+
     if ($Drop) {
         Write-Host "Dropping existing objects..." -ForegroundColor Yellow
         psql $Dsn -v ON_ERROR_STOP=1 -f 999_drop_all.sql
@@ -34,7 +42,7 @@ try {
 
     if ($Role) {
         Write-Host "Applying grants for role '$Role'..." -ForegroundColor Cyan
-        psql $Dsn -v ON_ERROR_STOP=1 -v pgf_role=$Role -f 011_grants.sql
+        psql $Dsn -v ON_ERROR_STOP=1 -c "SET agentbuilder.role = '$Role'" -f 011_grants.sql
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
     }
 

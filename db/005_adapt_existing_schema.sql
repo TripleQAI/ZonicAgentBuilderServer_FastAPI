@@ -26,19 +26,38 @@ SET search_path TO agent_builder, public;
 DO $$
 DECLARE
     v_expected CONSTANT text[][] := ARRAY[
+        -- The later Django migrations first: those are the columns most likely
+        -- to be absent if the migration history was not fully applied before
+        -- the data was moved.
+        ['agentBuilder_agentworkflow',    'semantic_search_enabled'],   -- 0002
+        ['agentBuilder_agentworkflow',    'semantic_domain'],           -- 0002
+        ['agentBuilder_agentworkflow',    'semantic_keywords'],         -- 0002
+        ['agentBuilder_agentworkflow',    'semantic_use_cases'],        -- 0002
+        ['agentBuilder_agentworkflow',    'embedding_vector'],          -- 0003
+        ['agentBuilder_agentworkflow',    'embedding_text'],            -- 0003
+        ['agentBuilder_agentworkflow',    'embedding_updated_at'],      -- 0003
+        ['agentBuilder_agentworkflowchip','is_disabled'],               -- 0005
+        -- Then the columns the read and write surfaces depend on.
         ['agentBuilder_agentworkflow',    'agentic_workflow_id'],
         ['agentBuilder_agentworkflow',    'raw_json'],
-        ['agentBuilder_agentworkflow',    'semantic_search_enabled'],
-        ['agentBuilder_agentworkflow',    'embedding_vector'],
         ['agentBuilder_agentworkflow',    'parent_package_id'],
+        ['agentBuilder_agentworkflow',    'nodes'],
+        ['agentBuilder_agentworkflow',    'edges'],
+        ['agentBuilder_agentworkflow',    'publish_channels'],
+        ['agentBuilder_agentworkflow',    'version_label'],
+        ['agentBuilder_agentworkflow',    'created_at'],
+        ['agentBuilder_agentworkflow',    'updated_at'],
         ['agentBuilder_agentrelationship','parent_agent_id'],
         ['agentBuilder_agentrelationship','child_agent_id'],
         ['agentBuilder_agentrelationship','is_resolved'],
+        ['agentBuilder_agentrelationship','validation_message'],
         ['agentBuilder_agentworkflowchip','agentic_workflow_id'],
         ['agentBuilder_workflowsnapshot', 'agent_workflow_id'],
         ['agentBuilder_workflowsnapshot', 'snapshot_json'],
         ['agentBuilder_nodetypedefinition','form_schema'],
-        ['agentBuilder_tooldefinition',   'tool_type']
+        ['agentBuilder_nodetypedefinition','validation_schema'],
+        ['agentBuilder_tooldefinition',   'tool_type'],
+        ['agentBuilder_tooldefinition',   'schema']
     ];
     v_missing text := '';
     i integer;

@@ -47,20 +47,25 @@ SELECT
     a.parent_package_id,
     a.semantic_search_enabled,
     a.updated_at,
-    a.raw_json
+    -- COALESCE is not decoration: `NULL || anything` is NULL in jsonb, so a
+    -- single null raw_json would blank the entire document rather than
+    -- degrade one field. The columns are NOT NULL under Django, but this view
+    -- also runs over migrated data, where that is an assumption rather than a
+    -- guarantee.
+    COALESCE(a.raw_json, '{}'::jsonb)
         || jsonb_build_object(
                'agenticWorkflowId',     a.agentic_workflow_id,
-               'nodes',                 a.nodes,
-               'edges',                 a.edges,
-               'variables',             a.variables,
-               'interface',             a.interface,
-               'skills',                a.skills,
-               'publishChannels',       a.publish_channels,
-               'security',              a.security,
-               'semanticSearchEnabled', a.semantic_search_enabled,
-               'semanticDomain',        a.semantic_domain,
-               'semanticKeywords',      a.semantic_keywords,
-               'semanticUseCases',      a.semantic_use_cases
+               'nodes',                 COALESCE(a.nodes, '[]'::jsonb),
+               'edges',                 COALESCE(a.edges, '[]'::jsonb),
+               'variables',             COALESCE(a.variables, '{}'::jsonb),
+               'interface',             COALESCE(a.interface, '{}'::jsonb),
+               'skills',                COALESCE(a.skills, '[]'::jsonb),
+               'publishChannels',       COALESCE(a.publish_channels, '[]'::jsonb),
+               'security',              COALESCE(a.security, '{}'::jsonb),
+               'semanticSearchEnabled', COALESCE(a.semantic_search_enabled, false),
+               'semanticDomain',        COALESCE(a.semantic_domain, ''),
+               'semanticKeywords',      COALESCE(a.semantic_keywords, ''),
+               'semanticUseCases',      COALESCE(a.semantic_use_cases, '')
            ) AS detail_json
 FROM agent_builder."agentBuilder_agentworkflow" a;
 
@@ -76,15 +81,15 @@ SELECT
     a.agentic_workflow_id,
     a.parent_package_id,
     a.is_root,
-    a.raw_json
+    COALESCE(a.raw_json, '{}'::jsonb)
         || jsonb_build_object(
-               'nodes',           a.nodes,
-               'edges',           a.edges,
-               'variables',       a.variables,
-               'interface',       a.interface,
-               'skills',          a.skills,
-               'publishChannels', a.publish_channels,
-               'security',        a.security
+               'nodes',           COALESCE(a.nodes, '[]'::jsonb),
+               'edges',           COALESCE(a.edges, '[]'::jsonb),
+               'variables',       COALESCE(a.variables, '{}'::jsonb),
+               'interface',       COALESCE(a.interface, '{}'::jsonb),
+               'skills',          COALESCE(a.skills, '[]'::jsonb),
+               'publishChannels', COALESCE(a.publish_channels, '[]'::jsonb),
+               'security',        COALESCE(a.security, '{}'::jsonb)
            ) AS export_json
 FROM agent_builder."agentBuilder_agentworkflow" a;
 
