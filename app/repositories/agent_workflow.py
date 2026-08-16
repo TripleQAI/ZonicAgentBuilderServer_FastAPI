@@ -51,13 +51,19 @@ class AgentWorkflowRepository(BaseRepository):
     # -- writes ------------------------------------------------------------
 
     async def save(
-        self, agent_columns: dict[str, Any], relationships: list[dict[str, Any]]
+        self, agent_columns: dict[str, Any], relationships: list[dict[str, Any]] | None
     ) -> dict[str, Any]:
-        """Agent + chip + relationships in one transaction."""
+        """Agent + chip + relationships in one transaction.
+
+        ``relationships=None`` is passed through as SQL NULL, which the procedure
+        reads as "leave the existing edges alone". Encoding it as JSON would send
+        the string ``"null"``, and ``'null'::jsonb IS NULL`` is false — the
+        distinction matters.
+        """
         return await self.call(
             tables.SAVE_AGENT,
             as_json_arg(agent_columns),
-            as_json_arg(relationships),
+            None if relationships is None else as_json_arg(relationships),
             UNRESOLVED_MESSAGE_FMT,
         )
 

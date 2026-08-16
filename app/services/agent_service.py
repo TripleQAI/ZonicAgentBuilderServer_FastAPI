@@ -45,8 +45,15 @@ class AgentService:
             columns.setdefault("display_name", body.get("displayName", "New Workflow"))
             columns["is_root"] = True
 
-        nodes = body.get("nodes") or []
-        relationships = relationship_service.derive_for_save(nodes, agentic_workflow_id)
+        # Relationships are derived from the canvas. If the caller did not send
+        # one, the stored canvas is unchanged, so the stored edges are still
+        # correct — pass None and the procedure leaves them alone. Deriving from
+        # an absent body would delete every edge on a partial save.
+        relationships = (
+            relationship_service.derive_for_save(body["nodes"] or [], agentic_workflow_id)
+            if "nodes" in body
+            else None
+        )
 
         result = await self._agents.save(columns, relationships)
         return SaveResult(

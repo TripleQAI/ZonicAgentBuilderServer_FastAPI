@@ -1,0 +1,875 @@
+{
+  "info": {
+    "name": "Zonic Agent Builder API",
+    "description": "Agent Workflow Builder API (:8000) plus the pgfoundation data gateway (:8600) it reads and writes through.\n\nRun **Health \u2192 Readiness** first: it fails fast if the gateway or the database is not reachable, which is the usual cause of everything else returning 502.\n\n**Import a package** writes the returned root id into the `ID` collection variable, so every request below it targets the workflow you just imported.\n\nFull notes: docs/curl-reference.md in the repository.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "API",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "GW",
+      "value": "http://localhost:8600",
+      "type": "string"
+    },
+    {
+      "key": "DS",
+      "value": "tsdb",
+      "type": "string",
+      "description": "Must equal PG_GATEWAY_DATASOURCE and the datasource name in the gateway's config. Check with 'Gateway \u2192 List datasources'."
+    },
+    {
+      "key": "SCHEMA",
+      "value": "agent_builder",
+      "type": "string"
+    },
+    {
+      "key": "ID",
+      "value": "935e5116-b512-4434-82b9-bba32de3d3f8",
+      "type": "string",
+      "description": "Set automatically by 'Import a package'."
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/health",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "200 while the process is up. Never touches the gateway."
+          },
+          "response": []
+        },
+        {
+          "name": "Readiness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/health/ready",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Calls the gateway's own /ready. 503 when the data path is unreachable. Run this first."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"data path is reachable\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().status).to.eql(\"ready\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Agents",
+      "item": [
+        {
+          "name": "List agents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents"
+              ]
+            },
+            "description": "Reads v_agent_summary. Node and edge counts are computed in SQL, not in Python."
+          },
+          "response": []
+        },
+        {
+          "name": "Import a package (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/import-package",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "import-package"
+              ]
+            },
+            "description": "Pick the two files in the Body tab before sending \u2014 Postman cannot store file paths in an exported collection.\n\nRoot, children and relationships land in ONE procedure call, so a failed import leaves nothing behind.\n\nOn success the root id is saved to {{ID}}.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "agent_file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Required. Select tests/fixtures/agent.json."
+                },
+                {
+                  "key": "sub_agents_file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Optional. tests/fixtures/sub_agents.json."
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"import created the package\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "if (pm.response.code === 201) {",
+                  "    var body = pm.response.json();",
+                  "    pm.collectionVariables.set(\"ID\", body.root_agent_id);",
+                  "    console.log(\"ID set to \" + body.root_agent_id",
+                  "        + \" \u2014 \" + body.sub_agent_ids.length + \" sub-agents, \"",
+                  "        + body.relationship_count + \" relationships, \"",
+                  "        + body.warnings.length + \" warning(s)\");",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Import a package (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/import-package",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "import-package"
+              ]
+            },
+            "description": "Same endpoint, JSON instead of multipart. Easier to script.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agent_data\": {\n    \"agenticWorkflowId\": \"{{ID}}\",\n    \"name\": \"demo\",\n    \"displayName\": \"Demo Workflow\",\n    \"nodes\": [\n      {\n        \"id\": \"n1\",\n        \"type\": \"start\",\n        \"name\": \"Start\",\n        \"config\": {}\n      }\n    ],\n    \"edges\": []\n  },\n  \"sub_agents_data\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get one agent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}"
+              ]
+            },
+            "description": "Reads v_agent_detail. Returns the agent's own document \u2014 raw_json with the first-class fields overlaid, so unknown keys (createdBy, originalBpc, freezeRelease) survive."
+          },
+          "response": []
+        },
+        {
+          "name": "Save (partial patch)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}"
+              ]
+            },
+            "description": "Calls sp_agent_workflow_save: agent, chip and relationships in one transaction.\n\nKeys you omit keep their stored value. Omitting `nodes` leaves the relationship edges alone \u2014 the canvas has not changed, so neither have they. Sending `\"nodes\": []` is a real edit and DOES clear them.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Renamed from Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"saved\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.json().status).to.eql(\"saved\");",
+                  "});",
+                  "pm.test(\"a partial save keeps the relationships\", function () {",
+                  "    // Regression guard: deriving edges from the request body",
+                  "    // used to delete all of them on a rename.",
+                  "    pm.expect(pm.response.json().relationshipCount).to.be.a(\"number\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Save (replace the canvas)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}"
+              ]
+            },
+            "description": "Sending `nodes` replaces the canvas and rebuilds the relationship edges from it.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nodes\": [\n    {\n      \"id\": \"n1\",\n      \"type\": \"start\",\n      \"name\": \"Start\",\n      \"config\": {}\n    },\n    {\n      \"id\": \"n2\",\n      \"type\": \"llm\",\n      \"name\": \"LLM_1\",\n      \"config\": {\n        \"model\": \"claude-sonnet-4-6\"\n      }\n    }\n  ],\n  \"edges\": [\n    {\n      \"id\": \"e1\",\n      \"source\": \"n1\",\n      \"target\": \"n2\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Relationship map",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}/relationships",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}",
+                "relationships"
+              ]
+            },
+            "description": "One read of v_agent_relationship_detail, child details included. The Django version issued an extra query per child."
+          },
+          "response": []
+        },
+        {
+          "name": "Export agent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}/export",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}",
+                "export"
+              ]
+            },
+            "description": "Reads v_agent_export \u2014 the raw_json overlay, expressed once in SQL so /export and /export-package cannot disagree."
+          },
+          "response": []
+        },
+        {
+          "name": "Export package",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}/export-package",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}",
+                "export-package"
+              ]
+            },
+            "description": "Root agent + resolved children + relationshipMap."
+          },
+          "response": []
+        },
+        {
+          "name": "Export debug package",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}/export-debug",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}",
+                "export-debug"
+              ]
+            },
+            "description": "Package plus unresolved and unreferenced sub-agent warnings."
+          },
+          "response": []
+        },
+        {
+          "name": "Create snapshot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}/snapshots",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}",
+                "snapshots"
+              ]
+            },
+            "description": "Built from the persisted row, not from this request \u2014 a snapshot always reflects what is stored.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment\": \"before edit\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Enable semantic search",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}"
+              ]
+            },
+            "description": "Run this before Embed, which returns 400 while semantic search is off.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"semanticSearchEnabled\": true,\n  \"semanticDomain\": \"energy\",\n  \"semanticKeywords\": \"energy, meters, consumption\",\n  \"semanticUseCases\": \"Compare energy usage across sites\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Embed",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/{{ID}}/embed",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "{{ID}}",
+                "embed"
+              ]
+            },
+            "description": "Generates the vector from the PERSISTED state and stores it via sp_agent_embedding_store.\n\n400 when semantic search is disabled for the workflow. Needs EMBEDDING_PROVIDER=bedrock with working AWS credentials; set it to `fake` to exercise the path offline."
+          },
+          "response": []
+        },
+        {
+          "name": "Not found (error shape)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/agents/00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agents",
+                "00000000-0000-0000-0000-000000000000"
+              ]
+            },
+            "description": "One envelope for every failure: {\"error\", \"code\", \"traceId\"}. traceId is echoed in X-Request-Id and forwarded to the gateway."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 with the standard envelope\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "    pm.expect(pm.response.json().code).to.eql(\"not_found\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Registry",
+      "item": [
+        {
+          "name": "Node types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/node-types",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "node-types"
+              ]
+            },
+            "description": "17 node types. Prefers v_node_type_active and falls back to the JSON resources when the table is empty, so it works before any seeding."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"all 17 node types\", function () {",
+                  "    pm.expect(pm.response.json().nodeTypes).to.have.lengthOf(17);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tools",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/tools",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "tools"
+              ]
+            },
+            "description": "Tool catalogue."
+          },
+          "response": []
+        },
+        {
+          "name": "Option sets",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/option-sets",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "option-sets"
+              ]
+            },
+            "description": "Shared select-option lists the UI renders. Served so the frontend holds none of its own."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workflows",
+      "item": [
+        {
+          "name": "Validate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{API}}/api/v1/workflows/validate",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "validate"
+              ]
+            },
+            "description": "Pure computation, no database.\n\nThis body deliberately trips two checks: the tool node has no toolName (error) and the edge points at a node that does not exist (warning).\n\nnode_count and edge_count are snake_case \u2014 the UI reads those names.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agenticWorkflowId\": \"11111111-2222-3333-4444-555555555555\",\n  \"name\": \"demo\",\n  \"nodes\": [\n    {\n      \"id\": \"n1\",\n      \"type\": \"start\",\n      \"name\": \"Start\",\n      \"config\": {}\n    },\n    {\n      \"id\": \"n2\",\n      \"type\": \"tool\",\n      \"name\": \"T\",\n      \"config\": {}\n    }\n  ],\n  \"edges\": [\n    {\n      \"id\": \"e1\",\n      \"source\": \"n1\",\n      \"target\": \"ghost\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Run mock (deprecated)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{API}}/api/v1/workflows/run-mock",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "workflows",
+                "run-mock"
+              ]
+            },
+            "description": "Kept for parity with the Django surface. The real mock engine is client-side.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nodes\": [\n    {\n      \"id\": \"n1\",\n      \"type\": \"start\",\n      \"name\": \"Start\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Data gateway (pgfoundation)",
+      "description": "Talk to the data layer directly, without this service. Useful for proving the views and procedures work after installing db/.",
+      "item": [
+        {
+          "name": "List datasources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{GW}}/v1/datasources",
+              "host": [
+                "{{GW}}"
+              ],
+              "path": [
+                "v1",
+                "datasources"
+              ]
+            },
+            "description": "The returned name MUST match {{DS}} and PG_GATEWAY_DATASOURCE. A mismatch surfaces as 502 'unknown data source' from the API."
+          },
+          "response": []
+        },
+        {
+          "name": "Gateway readiness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{GW}}/ready",
+              "host": [
+                "{{GW}}"
+              ],
+              "path": [
+                "ready"
+              ]
+            },
+            "description": "503 when no data source is reachable."
+          },
+          "response": []
+        },
+        {
+          "name": "Read v_agent_summary",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{GW}}/v1/datasources/{{DS}}/view",
+              "host": [
+                "{{GW}}"
+              ],
+              "path": [
+                "v1",
+                "datasources",
+                "{{DS}}",
+                "view"
+              ]
+            },
+            "description": "Governed read: name a view, pass structured filters. No SQL crosses the wire.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"v_agent_summary\",\n  \"schema\": \"{{SCHEMA}}\",\n  \"order_by\": [\n    {\n      \"column\": \"updated_at\",\n      \"descending\": true\n    }\n  ],\n  \"limit\": 5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read v_agent_export (overlay check)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{GW}}/v1/datasources/{{DS}}/view",
+              "host": [
+                "{{GW}}"
+              ],
+              "path": [
+                "v1",
+                "datasources",
+                "{{DS}}",
+                "view"
+              ]
+            },
+            "description": "Confirms the overlay view returns whole documents rather than nulls.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"v_agent_export\",\n  \"schema\": \"{{SCHEMA}}\",\n  \"columns\": [\n    \"agentic_workflow_id\"\n  ],\n  \"limit\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filtered read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{GW}}/v1/datasources/{{DS}}/view",
+              "host": [
+                "{{GW}}"
+              ],
+              "path": [
+                "v1",
+                "datasources",
+                "{{DS}}",
+                "view"
+              ]
+            },
+            "description": "Operators are a closed whitelist: eq ne lt le gt ge in not_in like ilike between is_null is_not_null. There is no OR and no join \u2014 that is why every non-trivial read is a view.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"v_agent_summary\",\n  \"schema\": \"{{SCHEMA}}\",\n  \"filters\": [\n    {\n      \"column\": \"is_root\",\n      \"op\": \"eq\",\n      \"value\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Call sp_node_type_upsert",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "content-type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{GW}}/v1/datasources/{{DS}}/procedure",
+              "host": [
+                "{{GW}}"
+              ],
+              "path": [
+                "v1",
+                "datasources",
+                "{{DS}}",
+                "procedure"
+              ]
+            },
+            "description": "jsonb arguments go as JSON TEXT, not as objects \u2014 the gateway's driver has no dict-to-jsonb adapter.\n\nThe trailing null is the INOUT placeholder. Counts per procedure:\n  sp_agent_workflow_save        3 inputs + 3 nulls\n  sp_agent_package_import       4 inputs + 3 nulls\n  sp_workflow_snapshot_create   2 inputs + 2 nulls\n  sp_agent_embedding_store      3 inputs + 1 null\n  sp_node_type_upsert           1 input  + 1 null\n  sp_tool_upsert                1 input  + 1 null",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"sp_node_type_upsert\",\n  \"schema\": \"{{SCHEMA}}\",\n  \"args\": [\n    \"[{\\\"type\\\":\\\"demo\\\",\\\"label\\\":\\\"Demo\\\"}]\",\n    null\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

@@ -209,12 +209,28 @@ CREATE OR REPLACE FUNCTION agent_builder.fn_agent_relationship_replace(
 DECLARE
     v_count integer;
 BEGIN
+    -- SQL NULL means "the caller sent no nodes, so the canvas is unchanged and
+    -- the stored edges still describe it" — leave them untouched and report
+    -- what is there. That is what the Django view did: it rebuilt from the
+    -- PERSISTED nodes, so a partial save recomputed the same set.
+    --
+    -- An empty array is different, and means "replace with none". Note that
+    -- SQL NULL and JSON null are not the same thing here: 'null'::jsonb IS NULL
+    -- is false, so both are checked.
+    IF p_relationships IS NULL OR jsonb_typeof(p_relationships) = 'null' THEN
+        SELECT count(*) INTO v_count
+        FROM agent_builder."agentBuilder_agentrelationship"
+        WHERE parent_agent_id = p_parent_id;
+        RETURN v_count;
+    END IF;
+
+    IF jsonb_typeof(p_relationships) <> 'array' THEN
+        RAISE EXCEPTION 'p_relationships must be a JSON array or null, got %',
+            jsonb_typeof(p_relationships);
+    END IF;
+
     DELETE FROM agent_builder."agentBuilder_agentrelationship"
     WHERE parent_agent_id = p_parent_id;
-
-    IF p_relationships IS NULL OR jsonb_typeof(p_relationships) <> 'array' THEN
-        RETURN 0;
-    END IF;
 
     WITH incoming AS (
         SELECT

@@ -256,6 +256,55 @@ async def test_14_save_load_preserves_extra_raw_json_keys(client: AsyncClient) -
     assert exported["originalBpc"] == "BPC-1"
 
 
+# -- regressions ------------------------------------------------------------
+
+
+async def test_partial_save_does_not_wipe_relationships(client: AsyncClient) -> None:
+    """A PUT that omits `nodes` must leave the relationship edges alone.
+
+    The Django view rebuilt relationships from the PERSISTED nodes
+    (relationship_resolver.py:78), so a partial save recomputed the same set.
+    Deriving them from the request body instead deleted every edge whenever a
+    caller sent only, say, a new displayName — the canvas kept its Sub Flow
+    nodes while the relationship map silently emptied.
+    """
+    child_id = str(uuid.uuid4())
+    root = _small_agent()
+    root["nodes"].append(_sub_flow_node("w1", child_id))
+    await _import(client, root, [_child(child_id)])
+    workflow_id = root["agenticWorkflowId"]
+
+    before = (await client.get(f"/api/v1/agents/{workflow_id}/relationships")).json()
+    assert before["resolvedCount"] == 1
+
+    # Rename only. No `nodes` key at all.
+    result = await client.put(
+        f"/api/v1/agents/{workflow_id}", json={"displayName": "Renamed"}
+    )
+    assert result.json()["relationshipCount"] == 1, "the save reported edges as lost"
+
+    after = (await client.get(f"/api/v1/agents/{workflow_id}/relationships")).json()
+    assert after["resolvedCount"] == 1, "a partial save deleted the relationships"
+    assert (await client.get(f"/api/v1/agents/{workflow_id}")).json()["displayName"] == "Renamed"
+
+
+async def test_saving_an_empty_canvas_does_clear_relationships(client: AsyncClient) -> None:
+    """`nodes: []` is a real edit and must clear the edges — the opposite of an
+    absent `nodes` key. The two must not be conflated."""
+    child_id = str(uuid.uuid4())
+    root = _small_agent()
+    root["nodes"].append(_sub_flow_node("w1", child_id))
+    await _import(client, root, [_child(child_id)])
+    workflow_id = root["agenticWorkflowId"]
+
+    result = await client.put(f"/api/v1/agents/{workflow_id}", json={"nodes": []})
+    assert result.json()["relationshipCount"] == 0
+
+    after = (await client.get(f"/api/v1/agents/{workflow_id}/relationships")).json()
+    assert after["resolvedCount"] == 0
+    assert after["unresolvedCount"] == 0
+
+
 # -- the real package -------------------------------------------------------
 
 

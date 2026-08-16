@@ -154,6 +154,13 @@ All routes are under `/api/v1`. Shapes match the Django surface they replace.
 | GET | `/tools` | Tool catalogue |
 | POST | `/workflows/validate` | Validate a workflow document |
 | POST | `/workflows/run-mock` | Deprecated stub, kept for parity |
+| GET | `/option-sets` | Shared select-option lists |
+
+Worked examples for every route, with the gateway call and SQL object each one
+reaches, are in [docs/curl-reference.md](docs/curl-reference.md). For Postman,
+import [docs/postman/](docs/postman/) — 27 requests across the API and the
+gateway, with an environment file and a `{{ID}}` variable that the import
+request fills in for you.
 
 ### Error envelope
 

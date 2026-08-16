@@ -281,8 +281,13 @@ class FakeGateway:
         return existing
 
     def _replace_relationships(
-        self, parent: dict[str, Any], relationships: list[dict[str, Any]], fmt: str
+        self, parent: dict[str, Any], relationships: list[dict[str, Any]] | None, fmt: str
     ) -> int:
+        # None -> leave the edges alone (mirrors fn_agent_relationship_replace).
+        if relationships is None:
+            return sum(
+                1 for r in self.agent_relationship if r["parent_agent_id"] == parent["id"]
+            )
         self.agent_relationship = [
             r for r in self.agent_relationship if r["parent_agent_id"] != parent["id"]
         ]
@@ -323,7 +328,7 @@ class FakeGateway:
         agent = _as_json(agent)
         row = self._upsert_agent(agent)
         count = self._replace_relationships(
-            row, _as_json(relationships) or [], fmt or "Child workflow %s not found in database"
+            row, _as_json(relationships), fmt or "Child workflow %s not found in database"
         )
         return {
             "o_relationship_count": count,
