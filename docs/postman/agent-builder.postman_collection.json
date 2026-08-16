@@ -610,6 +610,26 @@
             "description": "Shared select-option lists the UI renders. Served so the frontend holds none of its own."
           },
           "response": []
+        },
+        {
+          "name": "Node semantics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/node-semantics",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "node-semantics"
+              ]
+            },
+            "description": "Which node types reference a child workflow, hand off to siblings, or fan out into branches, and where each of those lives on the node.\n\nThe canvas needs this to render handles: a Rule node draws one output per configured branch and an Agent node one per handoff target. Deriving them from the static registry alone drops those edges."
+          },
+          "response": []
         }
       ]
     },

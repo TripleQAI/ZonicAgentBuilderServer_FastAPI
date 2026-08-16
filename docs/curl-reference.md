@@ -101,6 +101,7 @@ HTTP adapter.
 | `GET /node-types` | `view` | `v_node_type_active` (falls back to JSON when empty) |
 | `GET /tools` | `view` | `v_tool_active` (falls back to JSON when empty) |
 | `GET /option-sets` | — | none; served from `app/resources/option_sets.json` |
+| `GET /node-semantics` | — | none; served from `app/resources/node_semantics.json` |
 | `POST /workflows/validate` | — | none; pure computation |
 | `POST /workflows/run-mock` | — | none; deprecated stub |
 
@@ -275,7 +276,16 @@ curl -s $API/api/v1/tools         # {"tools":[ …5 items… ]}
 curl -s $API/api/v1/option-sets
 # {"mappingTypes":6,"stateOps":7,"schemaTypes":6,
 #  "messageRoles":3,"invocationTypes":3,"semanticDomains":3}   (lengths shown)
+
+curl -s $API/api/v1/node-semantics
+# {"childReference":{"workflow":"config.agenticWorkflowId"},
+#  "handoffTargets":{"agent":"config.handoffTarget"},
+#  "branches":{"rule":{"path":"config.rules","idField":"ruleId"}}}
 ```
+
+`node-semantics` is what lets the canvas draw the right handles: a Rule node
+renders one output per configured branch and an Agent node one per handoff
+target. Without it those edges have nowhere to attach and silently disappear.
 
 `node-types` and `tools` prefer the database and fall back to the JSON
 resources when the table is empty — so they work before any seeding.

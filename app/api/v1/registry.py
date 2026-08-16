@@ -8,6 +8,7 @@ still serves a working palette.
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 from fastapi import APIRouter
 
@@ -19,7 +20,12 @@ from app.domain.schemas.workflow import (
     ToolDefinition,
     ToolListResponse,
 )
-from app.registry.loader import load_option_sets, load_seed_tools, to_api_rows
+from app.registry.loader import (
+    load_node_semantics,
+    load_option_sets,
+    load_seed_tools,
+    to_api_rows,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +76,23 @@ async def option_sets() -> dict[str, list[dict[str, str]]]:
     node_registry.py, dynamic_fields.js and the page template.
     """
     return load_option_sets()
+
+
+@router.get(
+    "/node-semantics",
+    response_model=dict[str, dict[str, Any]],
+    summary="Structural roles per node type",
+)
+async def node_semantics() -> dict[str, dict[str, Any]]:
+    """Which node types reference a child workflow, hand off to siblings, or fan
+    out into branches — and where each of those lives on the node.
+
+    The canvas needs the same three facts the backend does: a Rule node renders
+    one handle per configured branch, an Agent node one per handoff target, and
+    a Sub Flow node shows its child. Serving the declaration keeps that from
+    being re-hard-coded in the UI.
+    """
+    return load_node_semantics()
 
 
 @router.get("/tools", response_model=ToolListResponse, summary="Tool catalogue")

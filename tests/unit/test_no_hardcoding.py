@@ -148,3 +148,32 @@ def test_resource_parses_and_documents_itself(resource: str) -> None:
     payload = json.loads((RESOURCES / resource).read_text(encoding="utf-8"))
     assert "_comment" in payload, f"{resource} should say what it is for"
     assert len(payload) > 1, f"{resource} is empty apart from its comment"
+
+
+# -- the two declarations of "where handoffs live" must agree ----------------
+
+
+def test_handoff_path_matches_the_registry_field() -> None:
+    """`node_semantics.handoffTargets` and the registry must point at the same
+    place.
+
+    The UI finds the handoff list by looking for the field its handoff editor
+    is bound to (`node_multiselect`); the backend reads node_semantics.json to
+    derive relationships. Two declarations of one fact, so they are checked
+    against each other rather than trusted.
+    """
+    registry = load_node_registry()
+    declared = load_node_semantics().get("handoffTargets", {})
+
+    from_registry: dict[str, str] = {}
+    for node_type, definition in registry.items():
+        for section in definition.get("formSchema", {}).get("sections", []):
+            for field in section.get("fields", []):
+                if field.get("type") == "node_multiselect":
+                    from_registry[node_type] = field["key"]
+
+    assert from_registry == declared, (
+        "node_semantics.handoffTargets disagrees with the registry.\n"
+        f"  registry (node_multiselect fields): {from_registry}\n"
+        f"  node_semantics.json:                {declared}"
+    )
