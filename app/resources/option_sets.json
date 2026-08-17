@@ -50,7 +50,7 @@
     { "value": "basic",    "label": "Basic" },
     { "value": "advanced", "label": "Advanced" }
   ],
-
+  
   "toolTypes": [
     { "value": "function", "label": "function" },
     { "value": "handoff",  "label": "handoff" },
