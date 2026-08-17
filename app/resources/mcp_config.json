@@ -1,0 +1,660 @@
+{
+  "_comment": [
+    "The MCP tool configurator, described as data rather than code.",
+    "",
+    "The source built this surface in mcp_modal.js: 1,347 lines of jQuery that",
+    "hard-coded every field, every option list, every conditional and every",
+    "validation rule three times over — once per tool kind. Adding a field to",
+    "the HTTP tool meant editing the render function, the change handler, the",
+    "defaults and the validator.",
+    "",
+    "Here the same surface is a schema. The UI renders whatever this file",
+    "declares, so adding a field is one entry below and no frontend change.",
+    "",
+    "Field shape is the node registry's FormField: key, label, type, required,",
+    "placeholder, options, rows, min, max. Two additions:",
+    "  showWhen  {path, in|notIn: [...]}  render only when the draft matches",
+    "  unique    true                     value must be unique across tools",
+    "Validation is derived: a visible required field that is empty is an error,",
+    "so the rules cannot drift from the form the way the source's did."
+  ],
+
+  "server": {
+    "title": "MCP Server Configuration",
+    "fields": [
+      { "key": "displayName", "label": "Tool Display Name", "type": "text" },
+      { "key": "description", "label": "Description", "type": "textarea", "rows": 2 },
+      {
+        "key": "serverName",
+        "label": "Server Name",
+        "type": "text",
+        "required": true,
+        "placeholder": "e.g. insite-energy-mcp"
+      },
+      {
+        "key": "transportType",
+        "label": "Transport Type",
+        "type": "select",
+        "required": true,
+        "options": [
+          { "value": "streamable_http", "label": "streamable_http" },
+          { "value": "sse", "label": "sse" },
+          { "value": "stdio", "label": "stdio" }
+        ]
+      },
+      {
+        "key": "url",
+        "label": "Server URL",
+        "type": "text",
+        "required": true,
+        "placeholder": "http://localhost:8001/mcp",
+        "showWhen": { "path": "transportType", "in": ["streamable_http", "sse"] }
+      },
+      {
+        "key": "headers",
+        "label": "Headers",
+        "type": "key_value_object",
+        "showWhen": { "path": "transportType", "in": ["streamable_http", "sse"] }
+      },
+      {
+        "key": "command",
+        "label": "Command",
+        "type": "text",
+        "required": true,
+        "placeholder": "python",
+        "showWhen": { "path": "transportType", "in": ["stdio"] }
+      },
+      {
+        "key": "args",
+        "label": "Arguments",
+        "type": "string_list",
+        "placeholder": "e.g. -m insite_energy_mcp",
+        "showWhen": { "path": "transportType", "in": ["stdio"] }
+      },
+      {
+        "key": "env",
+        "label": "Environment Variables",
+        "type": "key_value_object",
+        "showWhen": { "path": "transportType", "in": ["stdio"] }
+      }
+    ]
+  },
+
+  "serverDefaults": {
+    "displayName": "",
+    "description": "",
+    "serverName": "",
+    "transportType": "streamable_http",
+    "url": "",
+    "headers": {},
+    "command": "",
+    "args": [],
+    "env": {},
+    "configuredTools": []
+  },
+
+  "toolNameRule": {
+    "pattern": "^[a-z][a-z0-9_]*$",
+    "message": "Tool Name must be lowercase snake_case."
+  },
+
+  "toolKinds": [
+    {
+      "value": "database",
+      "label": "Database Tool",
+      "badge": "DB",
+      "icon": "bi-database",
+      "addLabel": "Add Database Tool",
+      "color": "#89b4fa",
+      "summary": ["name", "databaseType", "scriptSourceType", "connectionName"],
+      "defaults": {
+        "toolType": "database",
+        "enabled": true,
+        "name": "",
+        "displayName": "",
+        "description": "",
+        "databaseType": "mssql",
+        "connectionName": "",
+        "scriptSourceType": "configured_script",
+        "script": "",
+        "fireAndForget": false,
+        "llmScriptGeneration": {
+          "instruction": "",
+          "schemaContext": "",
+          "allowedTablesOrCollections": [],
+          "allowedFieldsOrColumns": [],
+          "requiredFilters": [],
+          "maxRowLimit": 100
+        },
+        "approvedTemplateName": "",
+        "parameters": [],
+        "result": {
+          "format": "rows",
+          "maxRows": 100,
+          "queryTimeout": 30,
+          "saveToFlowKey": "",
+          "saveToCache": false,
+          "cacheKeyConfig": {
+            "namespace": { "source": "fixed", "value": "" },
+            "cacheType": { "source": "fixed", "value": "" },
+            "version": { "source": "fixed", "value": "" },
+            "digest": []
+          }
+        }
+      },
+      "sections": [
+        {
+          "fields": [
+            {
+              "key": "name",
+              "label": "Tool Name",
+              "type": "text",
+              "required": true,
+              "unique": true,
+              "placeholder": "snake_case_name"
+            },
+            {
+              "key": "displayName",
+              "label": "Display Name",
+              "type": "text",
+              "placeholder": "Human-readable name"
+            },
+            { "key": "description", "label": "Description", "type": "textarea", "required": true, "rows": 2 },
+            {
+              "key": "databaseType",
+              "label": "Database Type",
+              "type": "select",
+              "required": true,
+              "options": [
+                { "value": "mssql", "label": "mssql" },
+                { "value": "mysql", "label": "mysql" },
+                { "value": "postgresql", "label": "postgresql" },
+                { "value": "mongodb", "label": "mongodb" }
+              ]
+            },
+            {
+              "key": "connectionName",
+              "label": "Connection Name",
+              "type": "text",
+              "required": true,
+              "placeholder": "e.g. bndw_readonly (reference only — no credentials)"
+            },
+            {
+              "key": "scriptSourceType",
+              "label": "Script Source",
+              "type": "select",
+              "required": true,
+              "options": [
+                { "value": "configured_script", "label": "configured_script" },
+                { "value": "llm_generated_script", "label": "llm_generated_script" },
+                { "value": "approved_template", "label": "approved_template" }
+              ]
+            },
+            {
+              "key": "script",
+              "label": "Script",
+              "type": "code",
+              "required": true,
+              "rows": 9,
+              "showWhen": { "path": "scriptSourceType", "in": ["configured_script"] }
+            },
+            {
+              "key": "llmScriptGeneration.instruction",
+              "label": "LLM Script Instruction",
+              "type": "textarea",
+              "required": true,
+              "rows": 3,
+              "placeholder": "Describe what data to query and how.",
+              "showWhen": { "path": "scriptSourceType", "in": ["llm_generated_script"] }
+            },
+            {
+              "key": "llmScriptGeneration.schemaContext",
+              "label": "Schema Context",
+              "type": "textarea",
+              "rows": 2,
+              "placeholder": "Paste relevant table / column schema here.",
+              "showWhen": { "path": "scriptSourceType", "in": ["llm_generated_script"] }
+            },
+            {
+              "key": "llmScriptGeneration.allowedTablesOrCollections",
+              "label": "Allowed Tables / Collections",
+              "type": "string_list",
+              "placeholder": "e.g. BNDW.Utility.bill",
+              "showWhen": { "path": "scriptSourceType", "in": ["llm_generated_script"] }
+            },
+            {
+              "key": "llmScriptGeneration.allowedFieldsOrColumns",
+              "label": "Allowed Fields / Columns",
+              "type": "string_list",
+              "placeholder": "e.g. BillSk, FacilitySk",
+              "showWhen": { "path": "scriptSourceType", "in": ["llm_generated_script"] }
+            },
+            {
+              "key": "llmScriptGeneration.requiredFilters",
+              "label": "Required Filters",
+              "type": "string_list",
+              "placeholder": "e.g. ClientCode = <CLIENT_CODE>",
+              "showWhen": { "path": "scriptSourceType", "in": ["llm_generated_script"] }
+            },
+            {
+              "key": "llmScriptGeneration.maxRowLimit",
+              "label": "Max Row Limit",
+              "type": "number",
+              "min": 1,
+              "max": 10000,
+              "showWhen": { "path": "scriptSourceType", "in": ["llm_generated_script"] }
+            },
+            {
+              "key": "approvedTemplateName",
+              "label": "Template Name",
+              "type": "select",
+              "required": true,
+              "placeholder": "-- select template --",
+              "showWhen": { "path": "scriptSourceType", "in": ["approved_template"] },
+              "options": [
+                { "value": "bill_details_by_period", "label": "bill_details_by_period" },
+                { "value": "bill_summary_by_period", "label": "bill_summary_by_period" },
+                { "value": "missing_bills_by_period", "label": "missing_bills_by_period" },
+                { "value": "usage_variance_by_period", "label": "usage_variance_by_period" },
+                { "value": "mongodb_bill_details_by_period", "label": "mongodb_bill_details_by_period" }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Dynamic Parameter Mapping",
+          "fields": [{ "key": "parameters", "type": "parameter_list" }]
+        },
+        {
+          "title": "Tool Result Settings",
+          "fields": [
+            {
+              "key": "result.format",
+              "label": "Result Format",
+              "type": "select",
+              "options": [
+                { "value": "rows", "label": "rows" },
+                { "value": "single_object", "label": "single_object" },
+                { "value": "summary", "label": "summary" },
+                { "value": "raw", "label": "raw" }
+              ]
+            },
+            { "key": "result.maxRows", "label": "Max Result Rows", "type": "number", "min": 1, "max": 10000 },
+            { "key": "result.queryTimeout", "label": "Query Timeout (s)", "type": "number", "min": 5, "max": 600 },
+            {
+              "key": "result.saveToFlowKey",
+              "label": "Save Result To Flow Key",
+              "type": "text",
+              "placeholder": "e.g. flow.queryResponse"
+            },
+            { "key": "result.saveToCache", "label": "Save result in cache", "type": "switch" },
+            {
+              "key": "result.cacheKeyConfig",
+              "type": "cache_key_config",
+              "showWhen": { "path": "result.saveToCache", "in": [true] }
+            }
+          ]
+        },
+        {
+          "fields": [{ "key": "fireAndForget", "label": "Enable fire-and-forget", "type": "switch" }]
+        }
+      ]
+    },
+
+    {
+      "value": "api",
+      "label": "HTTP Tool",
+      "badge": "HTTP",
+      "icon": "bi-globe",
+      "addLabel": "Add HTTP Tool",
+      "color": "#a6e3a1",
+      "summary": ["name", "method", "url", "authType"],
+      "defaults": {
+        "toolType": "api",
+        "enabled": true,
+        "name": "",
+        "displayName": "",
+        "description": "",
+        "method": "GET",
+        "url": "",
+        "headers": {},
+        "queryParams": {},
+        "bodyType": "none",
+        "bodyTemplate": "",
+        "bodyFormData": {},
+        "authType": "none",
+        "credentialName": "",
+        "apiKeyHeader": "",
+        "fireAndForget": false,
+        "parameters": [],
+        "result": {
+          "format": "json",
+          "saveToFlowKey": "",
+          "saveToCache": false,
+          "cacheKeyConfig": {
+            "namespace": { "source": "fixed", "value": "" },
+            "cacheType": { "source": "fixed", "value": "" },
+            "version": { "source": "fixed", "value": "" },
+            "digest": []
+          }
+        }
+      },
+      "sections": [
+        {
+          "fields": [
+            {
+              "key": "name",
+              "label": "Tool Name",
+              "type": "text",
+              "required": true,
+              "unique": true,
+              "placeholder": "snake_case_name"
+            },
+            {
+              "key": "displayName",
+              "label": "Display Name",
+              "type": "text",
+              "placeholder": "Human-readable name"
+            },
+            { "key": "description", "label": "Description", "type": "textarea", "required": true, "rows": 2 },
+            {
+              "key": "method",
+              "label": "HTTP Method",
+              "type": "select",
+              "required": true,
+              "options": [
+                { "value": "GET", "label": "GET" },
+                { "value": "POST", "label": "POST" },
+                { "value": "PUT", "label": "PUT" },
+                { "value": "PATCH", "label": "PATCH" },
+                { "value": "DELETE", "label": "DELETE" }
+              ]
+            },
+            {
+              "key": "url",
+              "label": "Endpoint URL",
+              "type": "text",
+              "required": true,
+              "placeholder": "https://api.example.com/v1/resource"
+            },
+            { "key": "headers", "label": "Request Headers", "type": "key_value_object" },
+            { "key": "queryParams", "label": "Query Parameters", "type": "key_value_object" },
+            {
+              "key": "bodyType",
+              "label": "Request Body Type",
+              "type": "select",
+              "showWhen": { "path": "method", "notIn": ["GET", "DELETE"] },
+              "options": [
+                { "value": "none", "label": "none" },
+                { "value": "json", "label": "json" },
+                { "value": "form_data", "label": "form_data" },
+                { "value": "raw", "label": "raw" }
+              ]
+            },
+            {
+              "key": "bodyFormData",
+              "label": "Form Fields",
+              "type": "key_value_object",
+              "showWhen": [
+                { "path": "method", "notIn": ["GET", "DELETE"] },
+                { "path": "bodyType", "in": ["form_data"] }
+              ]
+            },
+            {
+              "key": "bodyTemplate",
+              "label": "Body Template",
+              "description": "Use {{param}} placeholders.",
+              "type": "code",
+              "rows": 8,
+              "showWhen": [
+                { "path": "method", "notIn": ["GET", "DELETE"] },
+                { "path": "bodyType", "in": ["json", "raw"] }
+              ]
+            },
+            {
+              "key": "authType",
+              "label": "Authentication",
+              "type": "select",
+              "options": [
+                { "value": "none", "label": "none" },
+                { "value": "bearer_token", "label": "bearer_token" },
+                { "value": "api_key", "label": "api_key" },
+                { "value": "basic_auth", "label": "basic_auth" }
+              ]
+            },
+            {
+              "key": "apiKeyHeader",
+              "label": "API Key Header Name",
+              "type": "text",
+              "placeholder": "e.g. X-API-Key",
+              "showWhen": { "path": "authType", "in": ["api_key"] }
+            },
+            {
+              "key": "credentialName",
+              "label": "Credential Reference Name",
+              "type": "text",
+              "required": true,
+              "placeholder": "Reference name only — do not enter raw secrets",
+              "showWhen": { "path": "authType", "notIn": ["none"] }
+            }
+          ]
+        },
+        {
+          "title": "Dynamic Parameter Mapping",
+          "fields": [{ "key": "parameters", "type": "parameter_list" }]
+        },
+        {
+          "title": "Tool Result Settings",
+          "fields": [
+            {
+              "key": "result.format",
+              "label": "Result Format",
+              "type": "select",
+              "options": [
+                { "value": "json", "label": "json" },
+                { "value": "text", "label": "text" },
+                { "value": "raw", "label": "raw" },
+                { "value": "status_only", "label": "status_only" }
+              ]
+            },
+            {
+              "key": "result.saveToFlowKey",
+              "label": "Save Result To Flow Key",
+              "type": "text",
+              "placeholder": "e.g. flow.apiResponse"
+            },
+            { "key": "result.saveToCache", "label": "Save result in cache", "type": "switch" },
+            {
+              "key": "result.cacheKeyConfig",
+              "type": "cache_key_config",
+              "showWhen": { "path": "result.saveToCache", "in": [true] }
+            }
+          ]
+        },
+        {
+          "fields": [{ "key": "fireAndForget", "label": "Enable fire-and-forget", "type": "switch" }]
+        }
+      ]
+    },
+
+    {
+      "value": "function",
+      "label": "Function Tool",
+      "badge": "FN",
+      "icon": "bi-braces",
+      "addLabel": "Add Function Tool",
+      "color": "#cba6f7",
+      "summary": ["name", "functionPath", "payloadType"],
+      "defaults": {
+        "toolType": "function",
+        "enabled": true,
+        "name": "",
+        "displayName": "",
+        "description": "",
+        "functionPath": "",
+        "payloadType": "from_llm",
+        "payloadTemplate": "",
+        "payloadVariablePath": "",
+        "fireAndForget": false,
+        "result": {
+          "saveToFlowKey": "",
+          "saveToCache": false,
+          "cacheKeyConfig": {
+            "namespace": { "source": "fixed", "value": "" },
+            "cacheType": { "source": "fixed", "value": "" },
+            "version": { "source": "fixed", "value": "" },
+            "digest": []
+          }
+        }
+      },
+      "sections": [
+        {
+          "fields": [
+            {
+              "key": "name",
+              "label": "Tool Name",
+              "type": "text",
+              "required": true,
+              "unique": true,
+              "placeholder": "snake_case_name"
+            },
+            {
+              "key": "displayName",
+              "label": "Display Name",
+              "type": "text",
+              "placeholder": "Human-readable name"
+            },
+            { "key": "description", "label": "Description", "type": "textarea", "required": true, "rows": 2 },
+            {
+              "key": "functionPath",
+              "label": "Function Path",
+              "type": "text",
+              "required": true,
+              "placeholder": "e.g. mymodule.tools.get_weather"
+            },
+            {
+              "key": "payloadType",
+              "label": "Payload Type",
+              "type": "select",
+              "options": [
+                { "value": "from_llm", "label": "Payload from LLM" },
+                { "value": "from_config", "label": "Payload from User Config" },
+                { "value": "from_variables", "label": "Payload from Variables" }
+              ]
+            },
+            {
+              "key": "payloadTemplate",
+              "label": "Payload JSON",
+              "description": "Insert a variable with the {} button.",
+              "type": "code",
+              "required": true,
+              "rows": 8,
+              "showWhen": { "path": "payloadType", "in": ["from_config"] }
+            },
+            {
+              "key": "payloadVariablePath",
+              "label": "Variable Path",
+              "type": "variable_reference",
+              "required": true,
+              "placeholder": "e.g. {{flow.myVariable}} or {{system.userQuery}}",
+              "showWhen": { "path": "payloadType", "in": ["from_variables"] }
+            }
+          ]
+        },
+        {
+          "title": "Tool Result Settings",
+          "fields": [
+            {
+              "key": "result.saveToFlowKey",
+              "label": "Save Result To Flow Key",
+              "type": "text",
+              "placeholder": "e.g. flow.functionResult"
+            },
+            { "key": "result.saveToCache", "label": "Save result in cache", "type": "switch" },
+            {
+              "key": "result.cacheKeyConfig",
+              "type": "cache_key_config",
+              "showWhen": { "path": "result.saveToCache", "in": [true] }
+            }
+          ]
+        },
+        {
+          "fields": [{ "key": "fireAndForget", "label": "Enable fire-and-forget", "type": "switch" }]
+        }
+      ]
+    }
+  ],
+
+  "parameterRow": {
+    "addLabel": "Add Parameter",
+    "defaults": {
+      "name": "",
+      "placeholder": "",
+      "source": "flow",
+      "sourcePath": "",
+      "dataType": "string",
+      "required": false,
+      "defaultValue": "",
+      "description": "",
+      "validationRule": ""
+    },
+    "columns": [
+      { "key": "name", "placeholder": "Name", "type": "text", "width": "flex-[1.2]", "required": true },
+      { "key": "placeholder", "placeholder": "<HOLDER>", "type": "text", "width": "flex-[1.2]" },
+      {
+        "key": "source",
+        "type": "select",
+        "width": "flex-1",
+        "options": [
+          { "value": "flow", "label": "flow" },
+          { "value": "system", "label": "system" },
+          { "value": "user_input", "label": "user_input" },
+          { "value": "llm", "label": "llm" },
+          { "value": "static", "label": "static" }
+        ]
+      },
+      { "key": "sourcePath", "placeholder": "Source path", "type": "text", "width": "flex-[1.5]" },
+      {
+        "key": "dataType",
+        "type": "select",
+        "width": "flex-1",
+        "options": [
+          { "value": "string", "label": "string" },
+          { "value": "integer", "label": "integer" },
+          { "value": "decimal", "label": "decimal" },
+          { "value": "date", "label": "date" },
+          { "value": "datetime", "label": "datetime" },
+          { "value": "boolean", "label": "boolean" },
+          { "value": "json", "label": "json" }
+        ]
+      },
+      { "key": "required", "label": "Req", "type": "switch", "width": "shrink-0" },
+      { "key": "defaultValue", "placeholder": "Default value", "type": "text", "width": "flex-1", "row": 2 },
+      { "key": "description", "placeholder": "Description", "type": "text", "width": "flex-[2]", "row": 2 },
+      { "key": "validationRule", "placeholder": "Validation rule", "type": "text", "width": "flex-[2]", "row": 2 }
+    ]
+  },
+
+  "cacheKeyConfig": {
+    "parts": [
+      { "key": "namespace", "label": "Namespace" },
+      { "key": "cacheType", "label": "Cache Type" },
+      { "key": "version", "label": "Version" }
+    ],
+    "partSources": [
+      { "value": "fixed", "label": "fixed" },
+      { "value": "system", "label": "system" },
+      { "value": "flow", "label": "flow" }
+    ],
+    "digest": {
+      "label": "Digest",
+      "addLabel": "Add Digest Variable",
+      "placeholder": "variable path",
+      "defaults": { "source": "flow", "value": "" },
+      "sources": [
+        { "value": "system", "label": "system" },
+        { "value": "flow", "label": "flow" }
+      ]
+    }
+  }
+}

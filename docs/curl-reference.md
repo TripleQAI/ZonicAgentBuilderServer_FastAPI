@@ -102,6 +102,7 @@ HTTP adapter.
 | `GET /tools` | `view` | `v_tool_active` (falls back to JSON when empty) |
 | `GET /option-sets` | — | none; served from `app/resources/option_sets.json` |
 | `GET /node-semantics` | — | none; served from `app/resources/node_semantics.json` |
+| `GET /mcp-config-schema` | — | none; served from `app/resources/mcp_config.json` |
 | `POST /workflows/validate` | — | none; pure computation |
 | `POST /workflows/run-mock` | — | none; deprecated stub |
 
@@ -281,7 +282,17 @@ curl -s $API/api/v1/node-semantics
 # {"childReference":{"workflow":"config.agenticWorkflowId"},
 #  "handoffTargets":{"agent":"config.handoffTarget"},
 #  "branches":{"rule":{"path":"config.rules","idField":"ruleId"}}}
+
+curl -s $API/api/v1/mcp-config-schema
+# {"server":{…9 fields…},"serverDefaults":{…},
+#  "toolKinds":[{"value":"database",…},{"value":"api",…},{"value":"function",…}],
+#  "parameterRow":{…},"cacheKeyConfig":{…}}
 ```
+
+`mcp-config-schema` drives the MCP tool configurator end to end — the fields,
+which of them appear when, their defaults and what is required. Adding a field
+to a tool kind is an edit to `app/resources/mcp_config.json`, with no frontend
+change and no new endpoint.
 
 `node-semantics` is what lets the canvas draw the right handles: a Rule node
 renders one output per configured branch and an Agent node one per handoff
