@@ -20,6 +20,7 @@ FRAGMENTS_DIR = RESOURCES / "fragments"
 TOOLS_FILE = RESOURCES / "tools" / "seed_tools.json"
 OPTION_SETS_FILE = RESOURCES / "option_sets.json"
 NODE_SEMANTICS_FILE = RESOURCES / "node_semantics.json"
+MCP_CONFIG_FILE = RESOURCES / "mcp_config.json"
 
 _MAX_DEPTH = 16
 
@@ -76,6 +77,19 @@ def load_option_sets() -> dict[str, list[dict[str, str]]]:
     if not OPTION_SETS_FILE.exists():  # pragma: no cover - resource is committed
         return {}
     return _without_docs(_read(OPTION_SETS_FILE))
+
+
+@lru_cache(maxsize=1)
+def load_mcp_config_schema() -> dict[str, Any]:
+    """The MCP tool configurator, as a form schema.
+
+    The source drew this surface from 1,347 lines of jQuery with the fields,
+    option lists, conditionals and validation rules written out per tool kind.
+    Serving it as data means the UI renders whatever is declared here.
+    """
+    if not MCP_CONFIG_FILE.exists():  # pragma: no cover - resource is committed
+        return {}
+    return _without_docs(_read(MCP_CONFIG_FILE))
 
 
 @lru_cache(maxsize=1)

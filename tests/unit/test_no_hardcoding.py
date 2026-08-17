@@ -96,10 +96,16 @@ REQUIRED_OPTION_SETS = [
     "mappingTypes",
     "stateOps",
     "schemaTypes",
+    "toolTypes",
+    "variableTypes",
     "messageRoles",
     "invocationTypes",
     "semanticDomains",
 ]
+
+# Beyond value/label, an option may carry a hint the UI would otherwise
+# hard-code. Anything else is a typo, and a typo here is a silently ignored key.
+OPTIONAL_OPTION_KEYS = {"color", "configurator", "configureLabel"}
 
 
 @pytest.mark.parametrize("name", REQUIRED_OPTION_SETS)
@@ -107,7 +113,13 @@ def test_option_set_is_published(name: str) -> None:
     options = load_option_sets().get(name)
     assert options, f"{name} is missing from option_sets.json"
     for option in options:
-        assert set(option) == {"value", "label"}
+        assert {"value", "label"} <= set(option)
+        assert set(option) - {"value", "label"} <= OPTIONAL_OPTION_KEYS, (
+            f"{name}: unrecognised option key in {option}"
+        )
+        # The endpoint declares dict[str, str]; a non-string would be coerced
+        # or dropped by the response model rather than reaching the UI.
+        assert all(isinstance(v, str) for v in option.values())
 
 
 def test_ui_declares_no_option_lists_of_its_own() -> None:
@@ -142,7 +154,13 @@ def test_ui_declares_no_option_lists_of_its_own() -> None:
 
 
 @pytest.mark.parametrize(
-    "resource", ["option_sets.json", "node_semantics.json", "validation_rules.json"]
+    "resource",
+    [
+        "option_sets.json",
+        "node_semantics.json",
+        "validation_rules.json",
+        "mcp_config.json",
+    ],
 )
 def test_resource_parses_and_documents_itself(resource: str) -> None:
     payload = json.loads((RESOURCES / resource).read_text(encoding="utf-8"))

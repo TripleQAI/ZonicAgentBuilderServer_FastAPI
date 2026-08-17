@@ -630,6 +630,26 @@
             "description": "Which node types reference a child workflow, hand off to siblings, or fan out into branches, and where each of those lives on the node.\n\nThe canvas needs this to render handles: a Rule node draws one output per configured branch and an Agent node one per handoff target. Deriving them from the static registry alone drops those edges."
           },
           "response": []
+        },
+        {
+          "name": "MCP config schema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/mcp-config-schema",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "mcp-config-schema"
+              ]
+            },
+            "description": "The MCP tool configurator as a form schema: the server fields, the three tool kinds (database, api, function) with their sections, defaults, conditionals and validation flags, plus the parameter-row and cache-key editors.\n\nThe UI renders whatever this declares, so adding a field to a tool kind is an edit to resources/mcp_config.json and no frontend change."
+          },
+          "response": []
         }
       ]
     },

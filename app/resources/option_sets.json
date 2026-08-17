@@ -8,7 +8,14 @@
     "their own <select> options, and a third time in the HTML template and",
     "properties_panel.js. Adding an operation meant editing all three.",
     "",
-    "Now the UI reads them from here. Adding an option is one line in this file."
+    "Now the UI reads them from here. Adding an option is one line in this file.",
+    "",
+    "An option is {value, label} plus, where it earns one, a presentation or",
+    "behaviour hint the UI would otherwise hard-code:",
+    "  color          swatch, as node types already carry (variableTypes)",
+    "  configurator   the dialog this choice opens, and configureLabel its",
+    "                 wording — so no component tests for a particular value",
+    "                 (toolTypes.mcp)"
   ],
 
   "mappingTypes": [
@@ -37,6 +44,18 @@
     { "value": "boolean", "label": "boolean" },
     { "value": "array",   "label": "array" },
     { "value": "object",  "label": "object" }
+  ],
+
+  "toolTypes": [
+    { "value": "function", "label": "function" },
+    { "value": "handoff",  "label": "handoff" },
+    { "value": "ui_view",  "label": "ui_view" },
+    {
+      "value": "mcp",
+      "label": "mcp",
+      "configurator": "mcp",
+      "configureLabel": "Configure MCP Tools"
+    }
   ],
 
   "variableTypes": [

@@ -21,6 +21,7 @@ from app.domain.schemas.workflow import (
     ToolListResponse,
 )
 from app.registry.loader import (
+    load_mcp_config_schema,
     load_node_semantics,
     load_option_sets,
     load_seed_tools,
@@ -76,6 +77,20 @@ async def option_sets() -> dict[str, list[dict[str, str]]]:
     node_registry.py, dynamic_fields.js and the page template.
     """
     return load_option_sets()
+
+
+@router.get(
+    "/mcp-config-schema",
+    response_model=dict[str, Any],
+    summary="Form schema for the MCP tool configurator",
+)
+async def mcp_config_schema() -> dict[str, Any]:
+    """The MCP configurator's sections, fields, defaults and conditionals.
+
+    The UI renders whatever this declares, so a new field on a tool kind is an
+    edit to `resources/mcp_config.json` and no frontend change.
+    """
+    return load_mcp_config_schema()
 
 
 @router.get(
