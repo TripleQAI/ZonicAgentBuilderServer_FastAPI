@@ -14,9 +14,11 @@ from pathlib import Path
 import pytest
 
 from app.registry.loader import (
+    category_for,
     load_node_registry,
     load_node_semantics,
     load_option_sets,
+    to_api_rows,
 )
 from app.services.validation.engine import load_rules
 
@@ -96,6 +98,7 @@ REQUIRED_OPTION_SETS = [
     "mappingTypes",
     "stateOps",
     "schemaTypes",
+    "nodeCategories",
     "toolTypes",
     "variableTypes",
     "messageRoles",
@@ -153,11 +156,30 @@ def test_ui_declares_no_option_lists_of_its_own() -> None:
 # -- resource files stay well-formed ----------------------------------------
 
 
+# -- palette categories -----------------------------------------------------
+
+
+def test_every_node_type_lands_in_a_declared_category() -> None:
+    """A node type filed under nothing would vanish from a grouped palette."""
+    declared = {c["value"] for c in load_option_sets()["nodeCategories"]}
+    for row in to_api_rows():
+        assert row["category"] in declared, (
+            f"{row['type']} is in category {row['category']!r}, "
+            f"which node_categories.json does not declare"
+        )
+
+
+def test_category_membership_is_by_exception() -> None:
+    """An unlisted node type takes the default rather than an empty string."""
+    assert category_for("a-node-type-that-does-not-exist") == "basic"
+
+
 @pytest.mark.parametrize(
     "resource",
     [
         "option_sets.json",
         "node_semantics.json",
+        "node_categories.json",
         "validation_rules.json",
         "mcp_config.json",
     ],

@@ -20,6 +20,7 @@ FRAGMENTS_DIR = RESOURCES / "fragments"
 TOOLS_FILE = RESOURCES / "tools" / "seed_tools.json"
 OPTION_SETS_FILE = RESOURCES / "option_sets.json"
 NODE_SEMANTICS_FILE = RESOURCES / "node_semantics.json"
+NODE_CATEGORIES_FILE = RESOURCES / "node_categories.json"
 MCP_CONFIG_FILE = RESOURCES / "mcp_config.json"
 
 _MAX_DEPTH = 16
@@ -77,6 +78,30 @@ def load_option_sets() -> dict[str, list[dict[str, str]]]:
     if not OPTION_SETS_FILE.exists():  # pragma: no cover - resource is committed
         return {}
     return _without_docs(_read(OPTION_SETS_FILE))
+
+
+@lru_cache(maxsize=1)
+def _node_category_index() -> tuple[str, dict[str, str]]:
+    """``(default category, {node type: category})`` from the resource file."""
+    if not NODE_CATEGORIES_FILE.exists():  # pragma: no cover - resource is committed
+        return "", {}
+    payload = _without_docs(_read(NODE_CATEGORIES_FILE))
+    index = {
+        node_type: category
+        for category, members in payload.get("members", {}).items()
+        for node_type in members
+    }
+    return payload.get("default", ""), index
+
+
+def category_for(node_type: str) -> str:
+    """The palette group a node type belongs to.
+
+    Membership is by exception, so a node type added to the registry lands in
+    the default group rather than vanishing from a grouped palette.
+    """
+    default, index = _node_category_index()
+    return index.get(node_type, default)
 
 
 @lru_cache(maxsize=1)
@@ -154,6 +179,7 @@ def to_api_rows() -> list[dict[str, Any]]:
             "outputSchema": d.get("outputSchema", {}),
             "validationSchema": {"rules": d.get("validationRules", [])},
             "sortOrder": d.get("sortOrder", 0),
+            "category": category_for(node_type),
         }
         for node_type, d in load_node_registry().items()
     ]

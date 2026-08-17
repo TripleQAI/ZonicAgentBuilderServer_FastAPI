@@ -21,6 +21,7 @@ from app.domain.schemas.workflow import (
     ToolListResponse,
 )
 from app.registry.loader import (
+    category_for,
     load_mcp_config_schema,
     load_node_semantics,
     load_option_sets,
@@ -56,6 +57,9 @@ async def node_types(repo: NodeTypeRepoDep) -> NodeTypeListResponse:
                 output_schema=r.get("output_schema") or {},
                 validation_schema=r.get("validation_schema") or {},
                 sort_order=int(r.get("sort_order") or 0),
+                # The table has no category column: grouping is ours, not the
+                # source's, so both paths read it from the same resource.
+                category=category_for(r["type"]),
             )
             for r in rows
         ]
