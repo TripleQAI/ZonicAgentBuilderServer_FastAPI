@@ -46,6 +46,9 @@ class NodeTypeDefinition(CamelModel):
     output_schema: dict[str, Any] = Field(default_factory=dict)
     validation_schema: dict[str, Any] = Field(default_factory=dict)
     sort_order: int = 0
+    #: Palette group, from resources/node_categories.json. Not stored on the
+    #: node type itself — see that file for why.
+    category: str = ""
 
 
 class NodeTypeListResponse(CamelModel):
