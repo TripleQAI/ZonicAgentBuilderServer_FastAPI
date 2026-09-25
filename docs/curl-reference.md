@@ -8,7 +8,7 @@ the shapes are observed rather than described.
 
 ```bash
 API=http://localhost:8000
-GW=http://localhost:8600            # pgfoundation
+GW=https://pgfoundation.dev.tripleq.ai   # pgfoundation
 DS=tsdb                             # must equal PG_GATEWAY_DATASOURCE
 ID=935e5116-b512-4434-82b9-bba32de3d3f8
 ```
@@ -112,10 +112,10 @@ HTTP adapter.
 
 ```bash
 curl -s $API/health
-# {"status":"ok","gateway":"http://localhost:8600","datasource":"tsdb"}
+# {"status":"ok","gateway":"https://pgfoundation.dev.tripleq.ai","datasource":"tsdb"}
 
 curl -s $API/health/ready        # 503 when the gateway is unreachable
-# {"status":"ready","gateway":"http://localhost:8600","datasource":"tsdb"}
+# {"status":"ready","gateway":"https://pgfoundation.dev.tripleq.ai","datasource":"tsdb"}
 ```
 
 `/health` is liveness and never touches the gateway. `/health/ready` calls the

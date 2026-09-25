@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # --- data access ------------------------------------------------------
-    pg_gateway_base_url: str = "http://localhost:8600"
+    pg_gateway_base_url: str = "https://pgfoundation.dev.tripleq.ai"
     pg_gateway_datasource: str = "agentbuilder"
     #: PostgreSQL schema holding the views and procedures. Sent on every
     #: governed call rather than relying on the connection's search_path, which

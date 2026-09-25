@@ -118,7 +118,7 @@ $env:AGENTBUILDER_DSN = "postgresql://user:pass@localhost:5434/agentworkflowbuil
 # then start pgfoundation as usual
 ```
 
-Verify: `curl http://localhost:8600/v1/datasources` should list `agentbuilder`.
+Verify: `curl https://pgfoundation.dev.tripleq.ai/v1/datasources` should list `agentbuilder`.
 
 The schema (`agent_builder`) is sent on every governed call via
 `PG_GATEWAY_SCHEMA`, so nothing depends on the connection's `search_path`.

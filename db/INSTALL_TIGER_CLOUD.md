@@ -126,7 +126,7 @@ FROM agent_builder.v_agent_export;
    `PGF_CONFIG=<repo>/deploy/pgfoundation.agentbuilder.yaml`.
    Use the **direct** connection string, not the pooler, unless you have
    confirmed the pooler is in session mode.
-   Check: `curl http://localhost:8600/v1/datasources` lists `agentbuilder`.
+   Check: `curl https://pgfoundation.dev.tripleq.ai/v1/datasources` lists `agentbuilder`.
 2. **This service.** `.env` needs `PG_GATEWAY_BASE_URL`,
    `PG_GATEWAY_DATASOURCE=agentbuilder` and `PG_GATEWAY_SCHEMA=agent_builder`.
    Check: `curl http://localhost:8000/health/ready` returns `"status":"ready"`.
