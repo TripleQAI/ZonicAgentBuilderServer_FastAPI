@@ -12,7 +12,7 @@
     },
     {
       "key": "GW",
-      "value": "http://localhost:8600",
+      "value": "https://pgfoundation.dev.tripleq.ai",
       "type": "string"
     },
     {
