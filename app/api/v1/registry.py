@@ -22,6 +22,7 @@ from app.domain.schemas.workflow import (
 )
 from app.registry.loader import (
     category_for,
+    layout_for,
     load_mcp_config_schema,
     load_node_semantics,
     load_option_sets,
@@ -60,6 +61,8 @@ async def node_types(repo: NodeTypeRepoDep) -> NodeTypeListResponse:
                 # The table has no category column: grouping is ours, not the
                 # source's, so both paths read it from the same resource.
                 category=category_for(r["type"]),
+                # Nor a layout column: a swarm's container frame comes from the JSON registry.
+                layout=layout_for(r["type"]),
             )
             for r in rows
         ]

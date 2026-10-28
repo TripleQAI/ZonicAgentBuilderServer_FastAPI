@@ -29,5 +29,16 @@
   "branches": {
     "_doc": "node type -> where its branches live and which key identifies one",
     "rule": { "path": "config.rules", "idField": "ruleId" }
+  },
+  "swarms": {
+    "_doc": "node type -> where its members and entry point live, and which node types may be members (design 7.4). The validator, canvas, store, member_list widget and mock engine read it, so none names a container type.",
+    "swarm": {
+      "membersPath": "config.members",
+      "entryPointPath": "config.entryPoint",
+      "memberTypes": [
+        "agent",
+        "llm"
+      ]
+    }
   }
 }

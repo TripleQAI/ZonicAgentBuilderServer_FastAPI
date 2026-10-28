@@ -49,6 +49,8 @@ class NodeTypeDefinition(CamelModel):
     #: Palette group, from resources/node_categories.json. Not stored on the
     #: node type itself — see that file for why.
     category: str = ""
+    #: Canvas layout, e.g. ``{"kind": "container", "minWidth": 420, "minHeight": 240}`` for a swarm.
+    layout: dict[str, Any] | None = None
 
 
 class NodeTypeListResponse(CamelModel):

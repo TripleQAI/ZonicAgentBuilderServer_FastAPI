@@ -1,0 +1,87 @@
+{
+  "type": "swarm",
+  "label": "Swarm",
+  "icon": "bi-people-fill",
+  "color": "#06b6d4",
+  "description": "A team of agents that hand work to each other autonomously (Strands Swarm).",
+  "defaultNamePrefix": "Swarm",
+  "defaultData": { "label": "Swarm" },
+  "defaultConfig": {
+    "members": [],
+    "entryPoint": "",
+    "taskMapping": "{{system.userQuery}}",
+    "maxHandoffs": 20,
+    "maxIterations": 20,
+    "executionTimeoutSeconds": 900,
+    "nodeTimeoutSeconds": 300,
+    "repetitiveHandoffDetectionWindow": 0,
+    "repetitiveHandoffMinUniqueAgents": 0,
+    "outputStructure": [],
+    "variableUpdates": []
+  },
+  "layout": { "kind": "container", "minWidth": 420, "minHeight": 150 },
+  "handles": {
+    "sources": [{ "id": "default", "position": "right", "label": "" }],
+    "targets": [{ "id": "default", "position": "left", "label": "" }]
+  },
+  "formSchema": {
+    "sections": [
+      {
+        "title": "Members",
+        "fields": [
+          {
+            "key": "config.members",
+            "label": "Member agents",
+            "type": "member_list",
+            "description": "Agents in this swarm. To add one, drop an Agent or LLM node from the palette onto the swarm on the canvas."
+          },
+          {
+            "key": "config.entryPoint",
+            "label": "Entry point",
+            "type": "node_select",
+            "optionsFrom": "config.members",
+            "description": "The member that receives the task first. Empty means the first member."
+          }
+        ]
+      },
+      {
+        "title": "Task",
+        "fields": [
+          { "key": "config.taskMapping", "label": "Task", "type": "expression", "defaultValue": "{{system.userQuery}}" }
+        ]
+      },
+      {
+        "title": "Limits",
+        "fields": [
+          { "key": "config.maxHandoffs", "label": "Max handoffs", "type": "number", "min": 1, "defaultValue": 20 },
+          { "key": "config.maxIterations", "label": "Max iterations", "type": "number", "min": 1, "defaultValue": 20 },
+          { "key": "config.executionTimeoutSeconds", "label": "Swarm timeout (seconds)", "type": "number", "min": 1, "defaultValue": 900 },
+          { "key": "config.nodeTimeoutSeconds", "label": "Agent timeout (seconds)", "type": "number", "min": 1, "defaultValue": 300 }
+        ]
+      },
+      {
+        "type": "accordion",
+        "label": "Repetitive handoff detection",
+        "defaultOpen": false,
+        "fields": [
+          { "key": "config.repetitiveHandoffDetectionWindow", "label": "Window (recent handoffs; 0 turns it off)", "type": "number", "min": 0, "defaultValue": 0 },
+          { "key": "config.repetitiveHandoffMinUniqueAgents", "label": "Minimum unique agents in the window", "type": "number", "min": 0, "defaultValue": 0 }
+        ]
+      },
+      { "$ref": "section.output_structure" },
+      { "$ref": "section.variable_updates" }
+    ]
+  },
+  "outputSchema": {
+    "type": "object",
+    "properties": {
+      "status": { "type": "string" },
+      "text": { "type": "string" },
+      "finalAgent": { "type": "string" },
+      "nodeHistory": { "type": "array", "items": { "type": "string" } },
+      "executionTimeMs": { "type": "integer" }
+    }
+  },
+  "validationRules": ["required_name"],
+  "sortOrder": 6
+}

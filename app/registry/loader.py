@@ -180,6 +180,12 @@ def to_api_rows() -> list[dict[str, Any]]:
             "validationSchema": {"rules": d.get("validationRules", [])},
             "sortOrder": d.get("sortOrder", 0),
             "category": category_for(node_type),
+            "layout": d.get("layout"),
         }
         for node_type, d in load_node_registry().items()
     ]
+
+
+def layout_for(node_type: str) -> dict[str, Any] | None:
+    """The node type's canvas layout (a swarm's container frame), from the JSON registry."""
+    return load_node_registry().get(node_type, {}).get("layout")

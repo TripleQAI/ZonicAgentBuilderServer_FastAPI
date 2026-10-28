@@ -72,7 +72,7 @@ def test_1_node_registry_contains_required_types() -> None:
     registry = load_node_registry()
     for node_type in REQUIRED_NODE_TYPES:
         assert node_type in registry, f"missing node type {node_type}"
-    assert len(registry) == 17
+    assert len(registry) == 18  # the 17 ported types and swarm
 
 
 # -- 2, 3 -------------------------------------------------------------------

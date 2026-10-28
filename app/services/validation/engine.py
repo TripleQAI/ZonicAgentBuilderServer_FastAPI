@@ -33,14 +33,14 @@ def load_rules() -> dict[str, list[dict[str, Any]]]:
 
 
 def _apply_node_rules(
-    node: dict[str, Any], errors: list[str], warnings: list[str]
+    node: dict[str, Any], ctx: rule_primitives.RuleContext, errors: list[str], warnings: list[str]
 ) -> None:
     for spec in load_rules().get(node.get("type", ""), []):
         primitive = rule_primitives.get(spec["rule"])
         if primitive is None:  # pragma: no cover - guarded by a unit test
             raise ValueError(f"unknown validation rule {spec['rule']!r}")
         bucket = errors if spec.get("severity") == "error" else warnings
-        bucket.extend(primitive(spec, node, spec["message"]))
+        bucket.extend(primitive(spec, node, spec["message"], ctx))
 
 
 def validate_workflow(agent_json: dict[str, Any]) -> ValidationResult:
@@ -58,6 +58,14 @@ def validate_workflow(agent_json: dict[str, Any]) -> ValidationResult:
 
     if not nodes:
         warnings.append("Workflow has no nodes")
+
+    # Cross-node checks (a swarm's members, entry point and edges) see the whole
+    # document through one context.
+    ctx = rule_primitives.RuleContext.build(
+        [n for n in nodes if isinstance(n, dict)],
+        [e for e in edges if isinstance(e, dict)],
+        load_node_semantics(),
+    )
 
     # -- nodes -------------------------------------------------------------
     node_ids: set[str] = set()
@@ -79,8 +87,7 @@ def validate_workflow(agent_json: dict[str, Any]) -> ValidationResult:
         if node_name:
             if node_name in node_names:
                 warnings.append(
-                    f"Duplicate node name: {node_name} "
-                    f"(ids: {node_names[node_name]} and {node_id})"
+                    f"Duplicate node name: {node_name} (ids: {node_names[node_name]} and {node_id})"
                 )
             node_names[node_name] = node_id
 
@@ -88,7 +95,7 @@ def validate_workflow(agent_json: dict[str, Any]) -> ValidationResult:
             errors.append(f"Node {label} is missing its type field")
             continue
 
-        _apply_node_rules(node, errors, warnings)
+        _apply_node_rules(node, ctx, errors, warnings)
 
     # -- branch handles, for edge validation -------------------------------
     # Which node types fan out into handles, and where their branches live, is

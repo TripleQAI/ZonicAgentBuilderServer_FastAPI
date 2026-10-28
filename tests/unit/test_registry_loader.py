@@ -9,11 +9,11 @@ from app.registry import loader
 EXPECTED_TYPES = {
     "start", "llm", "agent", "external_agent", "script", "http_request",
     "guardrail", "rule", "workflow", "variable", "output", "approval",
-    "human_input", "tool", "note", "view", "db_query",
+    "human_input", "tool", "note", "view", "db_query", "swarm",
 }
 
 
-def test_all_seventeen_node_types_load() -> None:
+def test_all_eighteen_node_types_load() -> None:
     assert set(loader.load_node_registry()) == EXPECTED_TYPES
 
 
@@ -52,7 +52,7 @@ def test_model_options_fragment_resolved() -> None:
 
 def test_db_rows_match_the_django_seed_command_shape() -> None:
     rows = loader.to_db_rows()
-    assert len(rows) == 17
+    assert len(rows) == 18
     row = next(r for r in rows if r["type"] == "rule")
     assert set(row) == {
         "type", "label", "icon", "color", "description", "default_name_prefix",
