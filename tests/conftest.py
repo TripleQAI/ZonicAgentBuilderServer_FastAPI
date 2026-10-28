@@ -45,6 +45,8 @@ def settings() -> Settings:
         embedding_provider="fake",
         seed_registry_on_startup=False,
         cors_origins="http://localhost:3000",
+        # Sign-in has its own tests (tests/unit/test_auth.py); the rest run as one local user.
+        auth_required=False,
     )
 
 

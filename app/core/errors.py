@@ -36,6 +36,20 @@ class NotFoundError(AppError):
     code = "not_found"
 
 
+class UnauthorizedError(AppError):
+    """No sign-in, or a token that is invalid or expired: the UI sends the user to sign in."""
+
+    status_code = 401
+    code = "unauthorized"
+
+
+class AuthNotConfiguredError(AppError):
+    """Sign-in is required but the user pool is not configured (COGNITO_* settings)."""
+
+    status_code = 503
+    code = "auth_not_configured"
+
+
 class InvalidRequestError(AppError):
     status_code = 400
     code = "invalid_request"

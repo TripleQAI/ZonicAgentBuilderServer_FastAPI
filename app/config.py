@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     #: — note that doing so overwrites any row edited there by hand.
     seed_registry_on_startup: bool = False
 
+    # --- sign-in ----------------------------------------------------------
+    #: Every /api/v1 route needs a signed-in user. Off only for local tests and
+    #: tools that have no user pool.
+    auth_required: bool = True
+    #: The builder's own Cognito user pool (separate from the Strands builder's)
+    #: and its app client. Tokens are ID tokens issued for that client.
+    cognito_region: str = "us-east-1"
+    cognito_user_pool_id: str = ""
+    cognito_app_client_id: str = ""
+
     # --- embedding --------------------------------------------------------
     embedding_provider: Literal["bedrock", "fake"] = "bedrock"
     aws_default_region: str = "us-east-1"
@@ -56,6 +66,10 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def cognito_issuer(self) -> str:
+        return f"https://cognito-idp.{self.cognito_region}.amazonaws.com/{self.cognito_user_pool_id}"
 
     @property
     def bedrock_region(self) -> str:

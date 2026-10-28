@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse
 from app.api.router import api_router
 from app.api.v1 import health
 from app.config import Settings, get_settings
+from app.core.auth import CognitoVerifier
 from app.core.errors import AppError
 from app.gateway.fake import FakeGateway
 from app.gateway.http import HttpPgGateway
@@ -50,6 +51,7 @@ def create_app(
     *,
     gateway: PgGateway | None = None,
     embedding_provider: EmbeddingProvider | None = None,
+    verifier: CognitoVerifier | None = None,
 ) -> FastAPI:
     resolved = settings or get_settings()
     logging.basicConfig(level=resolved.log_level.upper())
@@ -57,6 +59,9 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         app.state.settings = resolved
+        # Built on first use (get_current_user), so a service without a user pool
+        # still starts and answers /health; sign-in calls then say what is missing.
+        app.state.verifier = verifier
         app.state.gateway = gateway or build_gateway(resolved)
         app.state.embedding_provider = embedding_provider or build_embedding_provider(
             resolved

@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 
 from app.config import Settings, get_settings
+from app.core.auth import CognitoVerifier, User, bearer_token
 from app.gateway.port import PgGateway
 from app.repositories.agent_relationship import AgentRelationshipRepository
 from app.repositories.agent_workflow import AgentWorkflowRepository
@@ -19,6 +20,28 @@ from app.services.export_service import ExportService
 from app.services.import_service import ImportService
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+
+#: Who a request runs as when sign-in is switched off (AUTH_REQUIRED=false).
+LOCAL_USER = User(sub="local", email="")
+
+
+def get_current_user(request: Request) -> User:
+    """The signed-in user, from the request's Cognito ID token (app/core/auth.py).
+
+    A plain function, so FastAPI runs it in its thread pool: the first call
+    fetches the pool's signing keys.
+    """
+    settings: Settings = request.app.state.settings
+    if not settings.auth_required:
+        return LOCAL_USER
+    token = bearer_token(request.headers.get("authorization"))
+    verifier = request.app.state.verifier
+    if verifier is None:
+        verifier = request.app.state.verifier = CognitoVerifier(settings)
+    return verifier.verify(token)
+
+
+CurrentUserDep = Annotated[User, Depends(get_current_user)]
 
 
 def get_gateway(request: Request) -> PgGateway:
@@ -73,15 +96,11 @@ def get_import_service(agents: AgentRepoDep) -> ImportService:
     return ImportService(agents)
 
 
-def get_export_service(
-    agents: AgentRepoDep, relationships: RelationshipRepoDep
-) -> ExportService:
+def get_export_service(agents: AgentRepoDep, relationships: RelationshipRepoDep) -> ExportService:
     return ExportService(agents, relationships)
 
 
-def get_embedding_service(
-    agents: AgentRepoDep, provider: ProviderDep
-) -> EmbeddingService:
+def get_embedding_service(agents: AgentRepoDep, provider: ProviderDep) -> EmbeddingService:
     return EmbeddingService(agents, provider)
 
 

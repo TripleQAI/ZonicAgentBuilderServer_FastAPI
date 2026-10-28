@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Zonic Agent Builder API",
-    "description": "Agent Workflow Builder API (:8000) plus the pgfoundation data gateway (:8600) it reads and writes through.\n\nRun **Health \u2192 Readiness** first: it fails fast if the gateway or the database is not reachable, which is the usual cause of everything else returning 502.\n\n**Import a package** writes the returned root id into the `ID` collection variable, so every request below it targets the workflow you just imported.\n\nFull notes: docs/curl-reference.md in the repository.",
+    "description": "Agent Workflow Builder API (:8000) plus the pgfoundation data gateway (:8600) it reads and writes through.\n\nRun **Health → Readiness** first: it fails fast if the gateway or the database is not reachable, which is the usual cause of everything else returning 502.\n\n**Import a package** writes the returned root id into the `ID` collection variable, so every request below it targets the workflow you just imported.\n\nFull notes: docs/curl-reference.md in the repository.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -19,7 +19,7 @@
       "key": "DS",
       "value": "tsdb",
       "type": "string",
-      "description": "Must equal PG_GATEWAY_DATASOURCE and the datasource name in the gateway's config. Check with 'Gateway \u2192 List datasources'."
+      "description": "Must equal PG_GATEWAY_DATASOURCE and the datasource name in the gateway's config. Check with 'Gateway → List datasources'."
     },
     {
       "key": "SCHEMA",
@@ -31,6 +31,12 @@
       "value": "935e5116-b512-4434-82b9-bba32de3d3f8",
       "type": "string",
       "description": "Set automatically by 'Import a package'."
+    },
+    {
+      "key": "TOKEN",
+      "value": "",
+      "type": "string",
+      "description": "A Cognito ID token of the builder's user pool (the UI's session, or `aws cognito-idp initiate-auth`). Every /api/v1 request sends it as a bearer token."
     }
   ],
   "item": [
@@ -91,6 +97,40 @@
       ]
     },
     {
+      "name": "Auth",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{TOKEN}}",
+            "type": "string"
+          }
+        ]
+      },
+      "item": [
+        {
+          "name": "Who am I (signed-in user)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{API}}/api/v1/me",
+              "host": [
+                "{{API}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me"
+              ]
+            },
+            "description": "The user the bearer token belongs to. 401 without a valid token of the builder's own pool."
+          }
+        }
+      ]
+    },
+    {
       "name": "Agents",
       "item": [
         {
@@ -130,7 +170,7 @@
                 "import-package"
               ]
             },
-            "description": "Pick the two files in the Body tab before sending \u2014 Postman cannot store file paths in an exported collection.\n\nRoot, children and relationships land in ONE procedure call, so a failed import leaves nothing behind.\n\nOn success the root id is saved to {{ID}}.",
+            "description": "Pick the two files in the Body tab before sending — Postman cannot store file paths in an exported collection.\n\nRoot, children and relationships land in ONE procedure call, so a failed import leaves nothing behind.\n\nOn success the root id is saved to {{ID}}.",
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -163,7 +203,7 @@
                   "    var body = pm.response.json();",
                   "    pm.collectionVariables.set(\"ID\", body.root_agent_id);",
                   "    console.log(\"ID set to \" + body.root_agent_id",
-                  "        + \" \u2014 \" + body.sub_agent_ids.length + \" sub-agents, \"",
+                  "        + \" — \" + body.sub_agent_ids.length + \" sub-agents, \"",
                   "        + body.relationship_count + \" relationships, \"",
                   "        + body.warnings.length + \" warning(s)\");",
                   "}"
@@ -224,7 +264,7 @@
                 "{{ID}}"
               ]
             },
-            "description": "Reads v_agent_detail. Returns the agent's own document \u2014 raw_json with the first-class fields overlaid, so unknown keys (createdBy, originalBpc, freezeRelease) survive."
+            "description": "Reads v_agent_detail. Returns the agent's own document — raw_json with the first-class fields overlaid, so unknown keys (createdBy, originalBpc, freezeRelease) survive."
           },
           "response": []
         },
@@ -250,7 +290,7 @@
                 "{{ID}}"
               ]
             },
-            "description": "Calls sp_agent_workflow_save: agent, chip and relationships in one transaction.\n\nKeys you omit keep their stored value. Omitting `nodes` leaves the relationship edges alone \u2014 the canvas has not changed, so neither have they. Sending `\"nodes\": []` is a real edit and DOES clear them.",
+            "description": "Calls sp_agent_workflow_save: agent, chip and relationships in one transaction.\n\nKeys you omit keep their stored value. Omitting `nodes` leaves the relationship edges alone — the canvas has not changed, so neither have they. Sending `\"nodes\": []` is a real edit and DOES clear them.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"displayName\": \"Renamed from Postman\"\n}",
@@ -357,7 +397,7 @@
                 "export"
               ]
             },
-            "description": "Reads v_agent_export \u2014 the raw_json overlay, expressed once in SQL so /export and /export-package cannot disagree."
+            "description": "Reads v_agent_export — the raw_json overlay, expressed once in SQL so /export and /export-package cannot disagree."
           },
           "response": []
         },
@@ -428,7 +468,7 @@
                 "snapshots"
               ]
             },
-            "description": "Built from the persisted row, not from this request \u2014 a snapshot always reflects what is stored.",
+            "description": "Built from the persisted row, not from this request — a snapshot always reflects what is stored.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"comment\": \"before edit\"\n}",
@@ -533,7 +573,17 @@
             }
           ]
         }
-      ]
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{TOKEN}}",
+            "type": "string"
+          }
+        ]
+      }
     },
     {
       "name": "Registry",
@@ -651,7 +701,17 @@
           },
           "response": []
         }
-      ]
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{TOKEN}}",
+            "type": "string"
+          }
+        ]
+      }
     },
     {
       "name": "Workflows",
@@ -678,7 +738,7 @@
                 "validate"
               ]
             },
-            "description": "Pure computation, no database.\n\nThis body deliberately trips two checks: the tool node has no toolName (error) and the edge points at a node that does not exist (warning).\n\nnode_count and edge_count are snake_case \u2014 the UI reads those names.",
+            "description": "Pure computation, no database.\n\nThis body deliberately trips two checks: the tool node has no toolName (error) and the edge points at a node that does not exist (warning).\n\nnode_count and edge_count are snake_case — the UI reads those names.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"agenticWorkflowId\": \"11111111-2222-3333-4444-555555555555\",\n  \"name\": \"demo\",\n  \"nodes\": [\n    {\n      \"id\": \"n1\",\n      \"type\": \"start\",\n      \"name\": \"Start\",\n      \"config\": {}\n    },\n    {\n      \"id\": \"n2\",\n      \"type\": \"tool\",\n      \"name\": \"T\",\n      \"config\": {}\n    }\n  ],\n  \"edges\": [\n    {\n      \"id\": \"e1\",\n      \"source\": \"n1\",\n      \"target\": \"ghost\"\n    }\n  ]\n}",
@@ -726,7 +786,17 @@
           },
           "response": []
         }
-      ]
+      ],
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{TOKEN}}",
+            "type": "string"
+          }
+        ]
+      }
     },
     {
       "name": "Data gateway (pgfoundation)",
@@ -861,7 +931,7 @@
                 "view"
               ]
             },
-            "description": "Operators are a closed whitelist: eq ne lt le gt ge in not_in like ilike between is_null is_not_null. There is no OR and no join \u2014 that is why every non-trivial read is a view.",
+            "description": "Operators are a closed whitelist: eq ne lt le gt ge in not_in like ilike between is_null is_not_null. There is no OR and no join — that is why every non-trivial read is a view.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"v_agent_summary\",\n  \"schema\": \"{{SCHEMA}}\",\n  \"filters\": [\n    {\n      \"column\": \"is_root\",\n      \"op\": \"eq\",\n      \"value\": true\n    }\n  ]\n}",
@@ -896,7 +966,7 @@
                 "procedure"
               ]
             },
-            "description": "jsonb arguments go as JSON TEXT, not as objects \u2014 the gateway's driver has no dict-to-jsonb adapter.\n\nThe trailing null is the INOUT placeholder. Counts per procedure:\n  sp_agent_workflow_save        3 inputs + 3 nulls\n  sp_agent_package_import       4 inputs + 3 nulls\n  sp_workflow_snapshot_create   2 inputs + 2 nulls\n  sp_agent_embedding_store      3 inputs + 1 null\n  sp_node_type_upsert           1 input  + 1 null\n  sp_tool_upsert                1 input  + 1 null",
+            "description": "jsonb arguments go as JSON TEXT, not as objects — the gateway's driver has no dict-to-jsonb adapter.\n\nThe trailing null is the INOUT placeholder. Counts per procedure:\n  sp_agent_workflow_save        3 inputs + 3 nulls\n  sp_agent_package_import       4 inputs + 3 nulls\n  sp_workflow_snapshot_create   2 inputs + 2 nulls\n  sp_agent_embedding_store      3 inputs + 1 null\n  sp_node_type_upsert           1 input  + 1 null\n  sp_tool_upsert                1 input  + 1 null",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"sp_node_type_upsert\",\n  \"schema\": \"{{SCHEMA}}\",\n  \"args\": [\n    \"[{\\\"type\\\":\\\"demo\\\",\\\"label\\\":\\\"Demo\\\"}]\",\n    null\n  ]\n}",
