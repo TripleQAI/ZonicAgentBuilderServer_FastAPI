@@ -1,8 +1,8 @@
 {
   "type": "script",
   "label": "Script",
-  "icon": "bi-file-code-fill",
-  "color": "#eab308",
+  "icon": "bi-code-slash",
+  "color": "#f97316",
   "description": "Runs a custom JavaScript or Python snippet.",
   "defaultNamePrefix": "Script",
   "defaultData": {
@@ -92,5 +92,5 @@
     "required_name",
     "required_code"
   ],
-  "sortOrder": 5
+  "sortOrder": 13
 }

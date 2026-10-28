@@ -1,7 +1,7 @@
 {
   "type": "approval",
   "label": "Approval",
-  "icon": "bi-hand-thumbs-up-fill",
+  "icon": "bi-check-lg",
   "color": "#f59e0b",
   "description": "Pauses the workflow for a human approval gate.",
   "defaultNamePrefix": "Approval",
@@ -96,5 +96,5 @@
   "validationRules": [
     "required_name"
   ],
-  "sortOrder": 12
+  "sortOrder": 16
 }

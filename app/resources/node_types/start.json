@@ -1,7 +1,7 @@
 {
   "type": "start",
   "label": "Start",
-  "icon": "bi-play-circle-fill",
+  "icon": "bi-play-fill",
   "color": "#22c55e",
   "description": "Entry point of the workflow.",
   "defaultNamePrefix": "Start",

@@ -171,7 +171,7 @@ def test_every_node_type_lands_in_a_declared_category() -> None:
 
 def test_category_membership_is_by_exception() -> None:
     """An unlisted node type takes the default rather than an empty string."""
-    assert category_for("a-node-type-that-does-not-exist") == "basic"
+    assert category_for("a-node-type-that-does-not-exist") == "utility"
 
 
 @pytest.mark.parametrize(

@@ -1,7 +1,7 @@
 {
   "type": "note",
   "label": "Note",
-  "icon": "bi-sticky-fill",
+  "icon": "bi-clipboard",
   "color": "#6b7280",
   "description": "A non-executing annotation placed on the canvas.",
   "defaultNamePrefix": "Note",
@@ -61,5 +61,5 @@
   },
   "outputSchema": {},
   "validationRules": [],
-  "sortOrder": 15
+  "sortOrder": 18
 }

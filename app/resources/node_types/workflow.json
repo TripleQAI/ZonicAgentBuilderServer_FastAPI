@@ -1,8 +1,8 @@
 {
   "type": "workflow",
   "label": "Sub Flow",
-  "icon": "bi-diagram-3-fill",
-  "color": "#14b8a6",
+  "icon": "bi-diagram-2-fill",
+  "color": "#3b82f6",
   "description": "Executes a child agent workflow as a sub-flow.",
   "defaultNamePrefix": "SubFlow",
   "defaultData": {

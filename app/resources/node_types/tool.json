@@ -1,7 +1,7 @@
 {
   "type": "tool",
   "label": "Tool",
-  "icon": "bi-tools",
+  "icon": "bi-wrench",
   "color": "#7c3aed",
   "description": "Invokes a registered tool (function, MCP, handoff, or UI view).",
   "defaultNamePrefix": "Tool",

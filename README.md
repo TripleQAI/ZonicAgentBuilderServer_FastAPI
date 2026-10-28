@@ -1,6 +1,6 @@
 # Zonic Agent Builder — Server (FastAPI)
 
-Backend for the InSite Agent Workflow Builder. Owns import/export, validation,
+Backend for the TripleQ Agent Workflow Builder. Owns import/export, validation,
 relationship derivation and semantic embedding.
 
 **It does not own data access.** There is no ORM, no database driver, no
@@ -184,8 +184,11 @@ They were transcribed mechanically from the source project, and the
 transcription is verifiable:
 
 ```powershell
-python scripts/gen_registry_resources.py --check   # resources match the source registry
+python scripts/gen_registry_resources.py --source <path>\node_registry.py --check
 ```
+
+Each node type's `icon`, `color` and `sortOrder` have since been restyled to
+match the Strands Visual Builder, so `--check` reports those keys as drift.
 
 Three more things are data rather than code, all under `app/resources`:
 

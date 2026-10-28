@@ -10,10 +10,12 @@ achievable rather than aspirational: the shared section and option objects are
 detected by *identity*, so a fragment reference is emitted exactly where the
 Python code reused the same object.
 
-    python scripts/gen_registry_resources.py [--source PATH] [--check]
+    python scripts/gen_registry_resources.py --source PATH [--check]
 
 ``--check`` regenerates into a temporary directory and diffs, so CI can prove
-the committed resources still match the source.
+the committed resources still match the source. Each node type's ``icon``,
+``color`` and ``sortOrder`` have since been restyled by hand to match the
+Strands Visual Builder, so ``--check`` reports those three keys as drift.
 """
 
 from __future__ import annotations
@@ -24,11 +26,6 @@ import json
 import sys
 from pathlib import Path
 from typing import Any
-
-DEFAULT_SOURCE = Path(
-    r"C:\InsitePlatform\Try\ZonicAgentBuilderPortal_DjangoApp"
-    r"\agentBuilder\services\node_registry.py"
-)
 
 REPO = Path(__file__).resolve().parent.parent
 RESOURCES = REPO / "app" / "resources"
@@ -128,7 +125,8 @@ def generate(source: Path, out_root: Path) -> tuple[int, int]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE)
+    parser.add_argument("--source", type=Path, required=True,
+                        help="the source project's agentBuilder/services/node_registry.py")
     parser.add_argument("--out", type=Path, default=RESOURCES)
     parser.add_argument("--check", action="store_true",
                         help="regenerate into a temp dir and diff against the committed files")

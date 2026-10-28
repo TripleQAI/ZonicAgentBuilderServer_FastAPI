@@ -1,7 +1,7 @@
 {
   "type": "view",
   "label": "View",
-  "icon": "bi-filetype-html",
+  "icon": "bi-eye-fill",
   "color": "#ec4899",
   "description": "Prepares an HTML fragment that can embed node results and flow variable data.",
   "defaultNamePrefix": "View",
@@ -63,5 +63,5 @@
   "validationRules": [
     "required_name"
   ],
-  "sortOrder": 16
+  "sortOrder": 17
 }

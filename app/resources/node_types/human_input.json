@@ -2,7 +2,7 @@
   "type": "human_input",
   "label": "Human Input",
   "icon": "bi-person-fill",
-  "color": "#0ea5e9",
+  "color": "#2563eb",
   "description": "Pauses the workflow to collect input from a human user.",
   "defaultNamePrefix": "HumanInput",
   "defaultData": {
@@ -109,5 +109,5 @@
   "validationRules": [
     "required_name"
   ],
-  "sortOrder": 13
+  "sortOrder": 15
 }

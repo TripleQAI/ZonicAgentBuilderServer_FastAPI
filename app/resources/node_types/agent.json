@@ -2,7 +2,7 @@
   "type": "agent",
   "label": "Agent",
   "icon": "bi-robot",
-  "color": "#6366f1",
+  "color": "#3b82f6",
   "description": "Invokes an agentic loop with tools and a model.",
   "defaultNamePrefix": "Agent",
   "defaultData": {
@@ -137,5 +137,5 @@
   "validationRules": [
     "required_name"
   ],
-  "sortOrder": 3
+  "sortOrder": 4
 }

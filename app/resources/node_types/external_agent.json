@@ -1,8 +1,8 @@
 {
   "type": "external_agent",
   "label": "External Agent",
-  "icon": "bi-box-arrow-up-right",
-  "color": "#a855f7",
+  "icon": "bi-pencil-square",
+  "color": "#d946ef",
   "description": "Calls an agent hosted externally via HTTP.",
   "defaultNamePrefix": "ExtAgent",
   "defaultData": {
@@ -122,5 +122,5 @@
   "validationRules": [
     "required_name"
   ],
-  "sortOrder": 4
+  "sortOrder": 5
 }

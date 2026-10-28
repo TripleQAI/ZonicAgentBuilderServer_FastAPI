@@ -1,8 +1,8 @@
 {
   "type": "variable",
   "label": "Variable Update",
-  "icon": "bi-sliders",
-  "color": "#84cc16",
+  "icon": "bi-stack",
+  "color": "#16a34a",
   "description": "Reads or writes workflow variables.",
   "defaultNamePrefix": "VarUpdate",
   "defaultData": {

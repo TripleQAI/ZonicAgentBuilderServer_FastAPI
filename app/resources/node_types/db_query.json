@@ -2,7 +2,7 @@
   "type": "db_query",
   "label": "DB Query",
   "icon": "bi-database-fill",
-  "color": "#0284c7",
+  "color": "#8b5cf6",
   "description": "Executes a SQL query against a configured database connection.",
   "defaultNamePrefix": "DBQuery",
   "defaultData": {
@@ -150,5 +150,5 @@
   "validationRules": [
     "required_name"
   ],
-  "sortOrder": 17
+  "sortOrder": 12
 }

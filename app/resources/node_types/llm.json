@@ -1,8 +1,8 @@
 {
   "type": "llm",
   "label": "LLM",
-  "icon": "bi-cpu-fill",
-  "color": "#3b82f6",
+  "icon": "bi-stars",
+  "color": "#a855f7",
   "description": "Calls a large language model with a prompt.",
   "defaultNamePrefix": "LLM",
   "defaultData": {
@@ -136,5 +136,5 @@
   "validationRules": [
     "required_name"
   ],
-  "sortOrder": 2
+  "sortOrder": 3
 }

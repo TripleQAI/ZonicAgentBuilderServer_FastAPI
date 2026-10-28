@@ -8,16 +8,19 @@
     "transcription still matches. A grouping of our own would break that proof.",
     "",
     "The order and labels of the groups themselves live in option_sets.json as",
-    "nodeCategories, so a group can exist before anything is in it — which is",
-    "what Advanced is today.",
+    "nodeCategories, so a group can exist before anything is in it.",
     "",
     "Membership is by exception: a node type not listed below falls into",
     "`default`. Moving one is a single line here and no code change anywhere."
   ],
 
-  "default": "basic",
+  "default": "utility",
 
   "members": {
-    "advanced": []
+    "entry_output": ["start", "output"],
+    "ai_agents": ["llm", "agent", "external_agent", "swarm"],
+    "logic_flow": ["guardrail", "rule", "workflow", "variable"],
+    "data_integration": ["http_request", "db_query", "script", "tool"],
+    "human_interaction": ["human_input", "approval", "view"]
   }
 }

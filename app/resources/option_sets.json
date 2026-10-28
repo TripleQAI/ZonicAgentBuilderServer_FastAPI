@@ -47,8 +47,12 @@
   ],
 
   "nodeCategories": [
-    { "value": "basic",    "label": "Basic" },
-    { "value": "advanced", "label": "Advanced" }
+    { "value": "entry_output", "label": "Entry & Output" },
+    { "value": "ai_agents", "label": "AI & Agents" },
+    { "value": "logic_flow", "label": "Logic & Flow" },
+    { "value": "data_integration", "label": "Data & Integration" },
+    { "value": "human_interaction", "label": "Human Interaction" },
+    { "value": "utility", "label": "Utility" }
   ],
   
   "toolTypes": [

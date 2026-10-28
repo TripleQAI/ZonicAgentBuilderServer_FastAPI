@@ -29,7 +29,7 @@
         "label": "Server Name",
         "type": "text",
         "required": true,
-        "placeholder": "e.g. insite-energy-mcp"
+        "placeholder": "e.g. tripleq-energy-mcp"
       },
       {
         "key": "transportType",
@@ -68,7 +68,7 @@
         "key": "args",
         "label": "Arguments",
         "type": "string_list",
-        "placeholder": "e.g. -m insite_energy_mcp",
+        "placeholder": "e.g. -m tripleq_energy_mcp",
         "showWhen": { "path": "transportType", "in": ["stdio"] }
       },
       {

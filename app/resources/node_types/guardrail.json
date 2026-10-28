@@ -1,7 +1,7 @@
 {
   "type": "guardrail",
   "label": "Guardrail",
-  "icon": "bi-shield-fill-check",
+  "icon": "bi-shield-fill-exclamation",
   "color": "#ef4444",
   "description": "Enforces safety or policy constraints on the flow.",
   "defaultNamePrefix": "Guardrail",

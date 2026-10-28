@@ -1,7 +1,7 @@
 {
   "type": "http_request",
   "label": "HTTP Request",
-  "icon": "bi-cloud-arrow-up-fill",
+  "icon": "bi-globe2",
   "color": "#06b6d4",
   "description": "Makes an outbound HTTP request.",
   "defaultNamePrefix": "HTTP",
@@ -135,5 +135,5 @@
     "required_name",
     "required_url"
   ],
-  "sortOrder": 6
+  "sortOrder": 11
 }
