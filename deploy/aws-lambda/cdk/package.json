@@ -1,0 +1,17 @@
+{
+  "name": "zonic-agent-builder-deploy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Agent Visual Builder (this API and ZonicAgentBuilderUI_NextJS) on Lambda, S3 and CloudFront",
+  "devDependencies": {
+    "@types/node": "20.1.0",
+    "aws-cdk": "2.1029.3",
+    "source-map-support": "^0.5.21",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.0.4"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.217.0",
+    "constructs": "^10.0.0"
+  }
+}

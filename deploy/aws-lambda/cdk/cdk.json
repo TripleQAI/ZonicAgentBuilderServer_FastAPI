@@ -1,0 +1,18 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/app.ts",
+  "context": {
+    "agentBuilder": {
+      "publicUrl": "https://dev.tripleq.ai/agent-visual-builder-lg/",
+      "basePath": "/agent-visual-builder-lg",
+      "cognitoRegion": "us-east-1",
+      "cognitoUserPoolId": "us-east-1_9HAzOOcoG",
+      "cognitoAppClientId": "2tmal6p94iij0258cgaahrg75j",
+      "pgGatewayBaseUrl": "https://sdyvf4y53x524cwgdisy2qyfqy0bgjkm.lambda-url.us-east-1.on.aws",
+      "pgGatewayDatasource": "agentbuilder",
+      "pgGatewaySchema": "agent_builder",
+      "embeddingProvider": "bedrock",
+      "bedrockEmbedModelId": "cohere.embed-english-v3",
+      "secretParameter": "/zonic-agent-builder-server/secrets"
+    }
+  }
+}

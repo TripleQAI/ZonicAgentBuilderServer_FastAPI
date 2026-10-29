@@ -11,3 +11,7 @@ dist/
 build/
 .coverage
 htmlcov/
+
+# deploy/aws-lambda/cdk
+deploy/aws-lambda/cdk/node_modules/
+deploy/aws-lambda/cdk/cdk.out/
