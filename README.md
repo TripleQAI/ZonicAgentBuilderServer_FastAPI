@@ -13,6 +13,23 @@ See [MIGRATION_PLAN.md](../MIGRATION_PLAN.md) §7–§8 for the reasoning.
 
 ---
 
+## Nebius x NVIDIA Global AI Hackathon
+
+This repository is part of the Zonic agent platform, our entry in the Nebius x NVIDIA Global AI Hackathon (Best Apps and Agents track). The platform's agents run on NVIDIA Nemotron models served by Nebius Token Factory. How that is wired, and which model does what, is in the runtime's README: [NVIDIA Nemotron on Nebius Token Factory](https://github.com/TripleQAI/ZonicAgentRuntimeBackend_Python_LangGraph#nvidia-nemotron-on-nebius-token-factory).
+
+**This repository's part:** It serves the model options the builder shows, the Nemotron codes included ([`app/resources/fragments/options.models.json`](app/resources/fragments/options.models.json)). It also validates and stores the workflows the runtime runs.
+
+**Live demo:** the chat at https://dev.tripleq.ai/agent-runtime-lg and the agent builder at https://dev.tripleq.ai/agent-visual-builder-lg/workflows. Both sign in with Amazon Cognito; the test accounts are in the hackathon submission's testing instructions.
+
+| Repository | Role |
+|---|---|
+| [ZonicAgentBuilderUI_NextJS](https://github.com/TripleQAI/ZonicAgentBuilderUI_NextJS) | The visual builder: design a workflow and pick a Nemotron model for each node |
+| **ZonicAgentBuilderServer_FastAPI** (this repository) | The builder's API: validation, import and export, the node registry and model options |
+| [ZonicAgentRuntimeBackend_Python_LangGraph](https://github.com/TripleQAI/ZonicAgentRuntimeBackend_Python_LangGraph) | Runs the workflows on LangGraph and calls Nemotron through Token Factory |
+| [ZonicAgentRuntimeUI_NextJS_For_LangGraph](https://github.com/TripleQAI/ZonicAgentRuntimeUI_NextJS_For_LangGraph) | The chat app people use the agents in |
+| [ZonicMCPServer_FastAPI](https://github.com/TripleQAI/ZonicMCPServer_FastAPI) | The agents' tools over open data |
+| [ZonicPostgresqlServer_FastAPI](https://github.com/TripleQAI/ZonicPostgresqlServer_FastAPI) | The PostgreSQL gateway every service stores data through (Neon) |
+
 ## Architecture at a glance
 
 ```
@@ -245,3 +262,7 @@ mypy app
   that a procedure does the right thing. `000_preflight.sql` and
   `005_adapt_existing_schema.sql` are the run-time checks for the former.
 - Frontend parity work (P4–P8) is tracked in the plan.
+
+## License
+
+Licensed under the Apache License 2.0; see [LICENSE](LICENSE).
