@@ -10,5 +10,21 @@
   {
     "value": "claude-haiku-4-5",
     "label": "claude-haiku-4-5"
+  },
+  {
+    "value": "nemotron-3-ultra",
+    "label": "nemotron-3-ultra"
+  },
+  {
+    "value": "nemotron-3-super",
+    "label": "nemotron-3-super"
+  },
+  {
+    "value": "nemotron-3-nano",
+    "label": "nemotron-3-nano"
+  },
+  {
+    "value": "nemotron-3.5-super-vl",
+    "label": "nemotron-3.5-super-vl"
   }
 ]

@@ -46,7 +46,8 @@ def test_model_options_fragment_resolved() -> None:
     definition = llm["formSchema"]["sections"][0]["fields"][0]
     assert definition["key"] == "config.model"
     assert {o["value"] for o in definition["options"]} == {
-        "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5"
+        "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5",
+        "nemotron-3-ultra", "nemotron-3-super", "nemotron-3-nano", "nemotron-3.5-super-vl",
     }
 
 
