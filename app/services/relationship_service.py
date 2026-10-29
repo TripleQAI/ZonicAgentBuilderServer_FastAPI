@@ -32,6 +32,8 @@ from app.domain.schemas.agent import (
 from app.registry.loader import load_node_semantics
 
 _AGENT_INFO_KEYS = ("agentId", "agentName", "agentVersion")
+#: A handoff row points at a node of the same workflow, not at a child workflow.
+_HANDOFF = "handoff"
 
 
 def _child_reference_paths() -> dict[str, str]:
@@ -74,7 +76,7 @@ def _handoff_rows(node: dict[str, Any], parent_wf_id: str, path: str) -> list[di
             "source_node_id": node.get("id", ""),
             "source_node_name": node.get("name", ""),
             "source_node_type": node.get("type", ""),
-            "relationship_type": "handoff",
+            "relationship_type": _HANDOFF,
             "config_inputs": {"targetNodeId": target},
             "agent_info": {},
             "app_info": {},
@@ -187,6 +189,10 @@ def build_map(
     unresolved: list[RelationshipEntry] = []
 
     for row in relationship_rows:
+        # Handoffs are kept for parity but have no child workflow to resolve; listing them
+        # would show each one as an unresolved reference to the parent itself.
+        if row.get("relationship_type") == _HANDOFF:
+            continue
         entry = RelationshipEntry(
             source_node_id=row.get("source_node_id") or "",
             source_node_name=row.get("source_node_name") or "",

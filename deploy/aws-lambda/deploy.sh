@@ -134,10 +134,15 @@ BUCKET="$(output SiteBucketName)"
 
 # --- app ---------------------------------------------------------------------
 # A static export for its path (next.config.ts), stored under it: S3 keys mirror the URLs.
+# It is built in a scratch copy of the project: `next build` always rewrites .next/, so building
+# in UI_DIR would pull the build out from under a `next start` serving that working copy.
 log "build the app for $BASE_PATH and upload it to s3://$BUCKET$BASE_PATH/"
+UI_BUILD="$(mktemp -d)"
+trap 'rm -f "$VALUE_FILE"; rm -rf "$UI_BUILD"' EXIT
+tar -C "$UI_DIR" --exclude=./node_modules --exclude=./.next --exclude=./out -cf - . | tar -C "$UI_BUILD" -xf -
 (
-  cd "$UI_DIR"
-  [ -d node_modules ] || npm ci --no-audit --no-fund
+  cd "$UI_BUILD"
+  npm ci --no-audit --no-fund
   # MSYS_NO_PATHCONV: Git Bash would turn the path into C:/Program Files/Git/...
   MSYS_NO_PATHCONV=1 NEXT_OUTPUT=export NEXT_BASE_PATH="$BASE_PATH" \
     NEXT_PUBLIC_COGNITO_REGION="$(output CognitoRegion)" \
@@ -146,9 +151,9 @@ log "build the app for $BASE_PATH and upload it to s3://$BUCKET$BASE_PATH/"
     npx next build
 )
 # Hashed assets never change; pages must be fetched fresh to pick up a release.
-aws_raw s3 sync "$(native_path "$UI_DIR/out/_next/static")" "s3://$BUCKET$BASE_PATH/_next/static" --delete \
+aws_raw s3 sync "$(native_path "$UI_BUILD/out/_next/static")" "s3://$BUCKET$BASE_PATH/_next/static" --delete \
   --cache-control 'public, max-age=31536000, immutable' >/dev/null
-aws_raw s3 sync "$(native_path "$UI_DIR/out")" "s3://$BUCKET$BASE_PATH" --delete --exclude '_next/static/*' \
+aws_raw s3 sync "$(native_path "$UI_BUILD/out")" "s3://$BUCKET$BASE_PATH" --delete --exclude '_next/static/*' \
   --cache-control 'no-cache' >/dev/null
 aws_raw cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' >/dev/null
 
